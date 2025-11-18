@@ -32,7 +32,8 @@ CREATE TABLE IF NOT EXISTS players (
   phone VARCHAR(20),
   name VARCHAR(150),
   password_hash VARCHAR(255) NOT NULL,
-  is_active TINYINT(1) DEFAULT 1,
+  is_active TINYINT(1) DEFAULT 0,             -- default 0 so users must verify
+  verification_token VARCHAR(255),             -- token for email verification
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
