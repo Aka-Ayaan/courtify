@@ -91,6 +91,7 @@ app.post('/auth/signup', async (req, res) => {
 // ------------------------
 app.get('/auth/verify', (req, res) => {
   const { token } = req.query;
+  console.log('Verification token received:', token);
 
   if (!token) {
     return res.status(400).send('Invalid verification link');
@@ -137,7 +138,7 @@ app.get('/auth/verify', (req, res) => {
 //   });
 // });
 // ------------------------
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.serverPORT || 4000;
 app.listen(PORT, () =>
   console.log(`🚀 Server running on port ${PORT}`)
 );
