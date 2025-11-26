@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
 import "../styles/userLogin.css";
-import "../styles/global.css";
 
 const formatPhoneNumber = (value) => {
   // Remove all non-digit characters except +
@@ -25,9 +23,7 @@ const formatPhoneNumber = (value) => {
   return cleaned.slice(0, 15);
 };
 
-function UserSignup() {
-  const navigate = useNavigate();
-
+function UserSignup({ close, showLogin }) {
   // States for form fields
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -46,6 +42,11 @@ function UserSignup() {
     return regex.test(number);
   };
 
+  const handleLoginClick = () => {
+    close(); // Close signup modal
+    showLogin(); // Open login modal
+  };
+
   const signup = async (e) => {
     e.preventDefault();
     setError("");
@@ -60,8 +61,8 @@ function UserSignup() {
 
     // Validate password length
     if (password.length < 8) {
-    setPasswordError("Password must be at least 8 characters long");
-    return;
+      setPasswordError("Password must be at least 8 characters long");
+      return;
     }
 
     // Validate password match
@@ -75,21 +76,23 @@ function UserSignup() {
     setLoading(true);
 
     try {
-        const response = await fetch("http://localhost:5000/auth/signup", {
+      const response = await fetch("http://localhost:5000/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            name : fullName,
-            phone,
-            email,
-            password
+          email,
+          password,
+          name: fullName,
+          phone
         })
       });
       const data = await response.json();
 
       if (response.ok) {
         console.log("Signup successful:", data);
-        navigate("/");  // Redirect to login
+        close(); // Close modal on successful signup
+        // You might want to automatically log them in or show login modal
+        showLogin(); // Optionally show login modal after successful signup
       } else {
         setError(data.error || "Signup failed");
       }
@@ -102,10 +105,21 @@ function UserSignup() {
   };
 
   return (
-    <div className="wrapper">
-      <div className="login-container">
-        <h2>Signup</h2>
-        <form onSubmit={signup}>
+    <div className="login-modal-container">
+      <button className="close-btn" onClick={close}>×</button>
+
+      <div className="login-left">
+        <h1>Join Courtify Today</h1>
+        <p>
+          Create your account and start booking sports venues instantly.  
+          Fast, simple, reliable.
+        </p>
+      </div>
+
+      <div className="login-right">
+        <h2>Create Account</h2>
+
+        <form onSubmit={signup} className="login-form">
           <input
             type="text"
             value={fullName}
@@ -121,9 +135,7 @@ function UserSignup() {
             onChange={(e) => setPhone(formatPhoneNumber(e.target.value))}
             required
           />
-          {phoneError && (
-            <p style={{ color: "red", fontSize: "0.85rem" }}>{phoneError}</p>
-          )}
+          {phoneError && <p className="error">{phoneError}</p>}
 
           <input
             type="email"
@@ -148,22 +160,19 @@ function UserSignup() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
-          {passwordError && (
-            <p style={{ color: "red", fontSize: "0.85rem" }}>{passwordError}</p>
-          )}
+          {passwordError && <p className="error">{passwordError}</p>}
 
-          <button className="btn" type="submit" disabled={loading}>
-            {loading ? "Signing up..." : "Signup"}
+          {error && <p className="error">{error}</p>}
+
+          <button className="btn login-submit" type="submit" disabled={loading}>
+            {loading ? "Creating Account..." : "Sign Up"}
           </button>
         </form>
 
         {/* Login link */}
-        <p style={{ marginTop: "15px", textAlign: "center", fontSize: "0.9rem" }}>
-          Already have an account?{" "}
-          <Link to="/" style={{ color: "var(--primary)", fontWeight: "bold" }}>
-            Login
-          </Link>
-        </p>
+        <div className="signup-link">
+          <p>Already have an account? <span onClick={handleLoginClick}>Log in</span></p>
+        </div>
       </div>
     </div>
   );

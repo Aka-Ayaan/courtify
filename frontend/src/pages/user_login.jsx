@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../Authcontext.jsx";
 import "../styles/userLogin.css";
-import "../styles/global.css";
 
-function UserLogin() {
-  const navigate = useNavigate();
+function UserLogin({ close,showSignup }) {
 
+  const { login: setUser } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,8 +24,8 @@ function UserLogin() {
       const data = await response.json();
       
       if (response.ok && data.authenticated) {
-        console.log("Login successful:", data);
-        navigate("/dashboard");  // example redirect
+        setUser(data);
+        close();
       } else {
         setError(data.error || "Login failed");
       }
@@ -38,37 +37,61 @@ function UserLogin() {
     }
   };
 
+  const handleSignupClick = () => {
+    close();
+    showSignup();
+  };
+
   return (
-    <div className="wrapper">
-      <div className="login-container">
-        <h2>Admin Login</h2>
-        <form onSubmit={login}>
+    <div className="login-modal-container">
+      <button className="close-btn" onClick={close}>×</button>
+
+      <div className="login-left">
+        <h1>Welcome to Courtify</h1>
+        <p>
+          Book sports venues instantly.  
+          Fast, simple, reliable.
+        </p>
+      </div>
+
+      <div className="login-right">
+        <h2>User Login</h2>
+
+        <form onSubmit={login} className="login-form">
           <input
             type="email"
-            value={email}
             placeholder="Email"
             onChange={(e) => setEmail(e.target.value)}
             required
           />
+
           <input
             type="password"
-            value={password}
             placeholder="Password"
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <button className="btn" type="submit" disabled={loading}>
+
+          <div className="remember-row">
+            <label className="label">
+              <input type="checkbox" />
+              Remember me
+            </label>
+
+            <span className="forgot">Forgot password?</span>
+          </div>
+
+          {error && <p className="error">{error}</p>}
+
+          <button className="btn login-submit" type="submit">
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
-        {/* Signup link below the form */}
-        <p style={{ marginTop: "15px", textAlign: "center", fontSize: "0.9rem" }}>
-          Don't have an account?{" "}
-          <Link to="/signup" style={{ color: "var(--primary)", fontWeight: "bold" }}>
-            Sign up
-          </Link>
-        </p>
+        {/* Sign-up modal signal */}
+        <div className="signup-link">
+          <p>Don't have an account? <span onClick={handleSignupClick}>Sign up</span></p>
+        </div>
       </div>
     </div>
   );

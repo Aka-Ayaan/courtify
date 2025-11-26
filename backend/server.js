@@ -74,6 +74,8 @@ app.post('/auth/signup', async (req, res) => {
       VALUES (?, ?, ?, ?, 0, ?)
     `;
 
+    console.log(email, password, name, phone, token);
+
     db.query(insert, [email, passwordHash, name, phone, token], async (err, _) => {
       if (err) return res.status(500).json({ error: "Database insert failed" });
 
@@ -112,31 +114,6 @@ app.get('/auth/verify', (req, res) => {
   });
 });
 
-
-// // token verification via link
-// app.get('/auth/verify', (req, res) => {
-//   const { token } = req.query;
-
-//   if (!token) {
-//     return res.status(400).send('Invalid verification link');
-//   }
-
-//   const query = 'UPDATE players SET is_active = 1, verification_token = NULL WHERE verification_token = ?';
-//   db.query(query, [token], (err, result) => {
-//     if (err) {
-//       console.error('Database error:', err);
-//       return res.status(500).send('Server error');
-//     }
-
-//     if (result.affectedRows === 0) {
-//       return res.status(400).send('Invalid or expired token');
-//     }
-
-//     // Redirect to frontend login page or a success page
-//     return res.redirect(`${process.env.FRONTEND_URL}/login?verified=1`);
-//   });
-// });
-// ------------------------
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
   console.log(`🚀 Server running on port ${PORT}`)
