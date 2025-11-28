@@ -74,8 +74,6 @@ app.post('/auth/signup', async (req, res) => {
       VALUES (?, ?, ?, ?, 0, ?)
     `;
 
-    console.log(email, password, name, phone, token);
-
     db.query(insert, [email, passwordHash, name, phone, token], async (err, _) => {
       if (err) return res.status(500).json({ error: "Database insert failed" });
 
@@ -93,7 +91,6 @@ app.post('/auth/signup', async (req, res) => {
 // ------------------------
 app.get('/auth/verify', (req, res) => {
   const { token } = req.query;
-  console.log('Verification token received:', token);
 
   if (!token) {
     return res.status(400).send('Invalid verification link');

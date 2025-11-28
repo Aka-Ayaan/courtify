@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import VenueCard from "../components/VenueCard";
 import { SearchBar } from "../components/SearchBar";
 import { Navbar } from "../components/NavBar";
@@ -15,6 +16,7 @@ export default function Dashboard() {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleShowSignup = () => {
     setShowSignup(true);

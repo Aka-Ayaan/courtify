@@ -1,8 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import viteLogo from "../../public/vite.svg"; // Vite placeholder image
 import "./VenueCard.css";
 
 function VenueCard({
+  id,
   name = "Sample Venue",
   type = "Football",
   location = "Karachi",
@@ -12,8 +14,20 @@ function VenueCard({
   rating = 4.5,
   image
 }) {
+
+  const naigate = useNavigate();
+
+  const handleCardClick = () => {
+    naigate(`/venue/`, { state: { id } })
+  }
+
+  const handleBookNow = (e) => {
+    e.stopPropagation();
+    naigate(`/venue/`, { state: { id } });
+  }
+
   return (
-    <div className="venue-card card">
+    <div className="venue-card card" onClick={handleCardClick}>
       <div className="venue-card-image-container">
         <img src={image || viteLogo} alt={name} className="venue-card-image" />
         <div className="venue-card-badge">{type}</div>
@@ -55,7 +69,7 @@ function VenueCard({
             <span className="venue-card-price-period">/hour</span>
           </div>
 
-          <button className="venue-card-button btn">Book Now</button>
+          <button className="venue-card-button btn" onClick={handleBookNow}>Book Now</button>
         </div>
       </div>
     </div>
