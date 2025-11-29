@@ -30,11 +30,11 @@ export default function Dashboard() {
     {
       id: 1,
       name: "Star Sports Arena",
-      type: "Football",
+      type: "Football", //a arena has multiple courts so no type for arena
       location: "Karachi",
       pricePerHour: 1500,
-      capacity: 12,
-      availability: "Open Today",
+      capacity: 12, // capacity is too  dynamic so better to remove it
+      availability: "Open Today", //availablity column gives available/close from backend
       rating: 4.8
     },
     {

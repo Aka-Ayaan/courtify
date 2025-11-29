@@ -5,9 +5,28 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import db from './config/db.js';
 import sendVerificationEmail from './utils/sendMail.js';
+import path from "path";
+import { fileURLToPath } from "url";
+
+// =====================================
+// Resolve __dirname (required for ES Modules)
+// =====================================
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
+
+// =====================================
+// Initialize server
+// =====================================
 const app = express();
+
+// =====================================
+// Static file hosting (Assets folder)
+// Accessible as: http://localhost:5000/assets/xxx.jpg
+// =====================================
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
+
 
 app.use(cors());
 app.use(express.json());
@@ -111,6 +130,33 @@ app.get('/auth/verify', (req, res) => {
     return res.redirect(`${process.env.FRONTEND_URL}/?verified=1`);
   });
 });
+
+
+// =====================================
+// GET ALL ARENAS + main arena image
+// =====================================
+app.get('/arenas', (req, res) => {
+  const query = `
+    SELECT 
+      a.id,
+      a.name,
+      a.city AS location,
+      a.pricePerHour,
+      a.availability,
+      a.rating
+    FROM arenas a
+    LEFT JOIN arena_images ai ON ai.arena_id = a.id
+    ORDER BY a.id DESC
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+
+    return res.json(results);
+  });
+});
+
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>

@@ -2,27 +2,14 @@ import mysql from 'mysql2/promise';
 import fs from 'fs';
 import dotenv from 'dotenv';
 
-dotenv.config(); // load .env variables
+dotenv.config();
 
 const { DB_HOST, DB_USER, DB_PASSWORD, DB_NAME } = process.env;
 
 async function runDDL() {
   const ddl = fs.readFileSync('./sql/courtify_db.sql', 'utf8');
 
-  // Connect without a database first to create it
-  const conn = await mysql.createConnection({
-    host: DB_HOST,
-    user: DB_USER,
-    password: DB_PASSWORD,
-    multipleStatements: true
-  });
-
-  // Separate CREATE DATABASE from the rest
-  const statements = ddl.split(/;\s*\n/); // split on semicolon+newline
-  await conn.query(statements[0]); // CREATE DATABASE
-  await conn.end();
-
-  // Connect to the new database
+  // Connect directly to the database (must exist manually)
   const dbConn = await mysql.createConnection({
     host: DB_HOST,
     user: DB_USER,
@@ -31,9 +18,11 @@ async function runDDL() {
     multipleStatements: true
   });
 
-  // Run the rest of the SQL (skip CREATE DATABASE)
-  await dbConn.query(statements.slice(1).join(';\n'));
+  // Run full SQL file
+  await dbConn.query(ddl);
   await dbConn.end();
+
+  console.log("✅ courtify_db.sql executed successfully!");
 }
 
 runDDL().catch(console.error);
