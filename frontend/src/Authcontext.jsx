@@ -8,8 +8,11 @@ export const AuthProvider = ({ children }) => {
   const login = (userData) => setUser(userData);
   const logout = () => setUser(null);
 
+  const isOwner = () => user?.userType === 'owner';
+  const isPlayer = () => user?.userType === 'player';
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, isOwner, isPlayer }}>
       {children}
     </AuthContext.Provider>
   );

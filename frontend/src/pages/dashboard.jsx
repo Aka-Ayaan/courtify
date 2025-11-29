@@ -218,6 +218,22 @@ export default function Dashboard() {
           user={user}
         />
 
+        {/* Owner CTA section */}
+        {!user && (
+          <div className="owner-cta-banner">
+            <div className="owner-cta-content">
+              <h2>Are you a facility owner?</h2>
+              <p>List your sports facilities and reach thousands of players across Pakistan</p>
+              <button 
+                className="btn btn-secondary btn"
+                onClick={handleShowSignup}
+              >
+                Register as Owner
+              </button>
+            </div>
+          </div>
+        )}
+
         <section className="hero-section">
           <div className="hero-left">
             <h1>Find & Book Sports Venues Across Pakistan</h1>

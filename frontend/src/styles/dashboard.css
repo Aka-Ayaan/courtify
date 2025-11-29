@@ -86,6 +86,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 60px 40px;
+  border-radius: 0 0 50px 50px;
   background: linear-gradient(135deg, #1b4332, #2d6a4f);
   /* background: linear-gradient(
     135deg,
@@ -93,9 +94,8 @@
     var(--dark-slate-gray)
   ); */
   color: white;
-  border-radius: 0 0 20px 20px;
-  margin-bottom: 30px;
   gap: 40px;
+  margin-bottom: 2rem;
 }
 
 .hero-left {
@@ -152,6 +152,24 @@
   width: 100%;
   max-width: 420px;
   border-radius: 12px;
+}
+
+.owner-cta-banner {
+  background: linear-gradient(135deg, #1b4332, #2d6a4f);
+  color: white;
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 0;
+}
+
+.owner-cta-content h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+}
+
+.owner-cta-content p {
+  margin: 0 0 1rem 0;
+  opacity: 0.9;
 }
 
 /* RESPONSIVE */

@@ -7,6 +7,7 @@ function UserLogin({ close,showSignup }) {
   const { login: setUser } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [userType , setUserType] = useState("player");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -16,7 +17,7 @@ function UserLogin({ close,showSignup }) {
     setError("");
 
     try{
-      const params = new URLSearchParams({ email, password });
+      const params = new URLSearchParams({ email, password, userType });
       const response = await fetch(`http://localhost:5000/auth/validate?${params}`, {
         method: "GET",
       });
@@ -26,6 +27,11 @@ function UserLogin({ close,showSignup }) {
       if (response.ok && data.authenticated) {
         setUser(data);
         close();
+
+        if (data.userType == "owner") {
+          // redirect or show owner options on navbar
+        }
+
       } else {
         setError(data.error || "Login failed");
       }
@@ -49,13 +55,32 @@ function UserLogin({ close,showSignup }) {
       <div className="login-left">
         <h1>Welcome to Courtify</h1>
         <p>
-          Book sports venues instantly.  
-          Fast, simple, reliable.
+          {userType === 'player' 
+            ? "Book sports venues instantly. Fast, simple, reliable."
+            : "Manage your sports facilities efficiently. Grow your business."
+          }
         </p>
       </div>
 
       <div className="login-right">
-        <h2>User Login</h2>
+        <h2>Login to Courtify</h2>
+
+        {/* User Type Selector */}
+        <div className="user-type-selector">
+          <button 
+            type="button"
+            className={`type-btn ${userType === 'player' ? 'active' : ''}`}
+            onClick={() => setUserType('player')}
+          >Player
+          </button>
+          
+          <button 
+            type="button"
+            className={`type-btn ${userType === 'owner' ? 'active' : ''}`}
+            onClick={() => setUserType('owner')}
+          >Owner
+          </button>
+        </div>
 
         <form onSubmit={login} className="login-form">
           <input

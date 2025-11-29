@@ -30,6 +30,7 @@ function UserSignup({ close, showLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [userType , setUserType] = useState("player");
   const [loading, setLoading] = useState(false);
 
   const [phoneError, setPhoneError] = useState("");
@@ -83,16 +84,21 @@ function UserSignup({ close, showLogin }) {
           email,
           password,
           name: fullName,
-          phone
+          phone,
+          userType
         })
       });
       const data = await response.json();
 
       if (response.ok) {
         console.log("Signup successful:", data);
-        close(); // Close modal on successful signup
-        // You might want to automatically log them in or show login modal
-        showLogin(); // Optionally show login modal after successful signup
+        close();
+        showLogin();
+
+        if (data.userType == "owner") {
+          // redirect or show owner options on navbar
+        }
+
       } else {
         setError(data.error || "Signup failed");
       }
@@ -111,13 +117,31 @@ function UserSignup({ close, showLogin }) {
       <div className="login-left">
         <h1>Join Courtify Today</h1>
         <p>
-          Create your account and start booking sports venues instantly.  
-          Fast, simple, reliable.
+          {userType === 'player' 
+            ? "Create your account and start booking sports venues instantly. Fast, simple, reliable."
+            : "Register your sports facility and start managing bookings efficiently. Grow your business with Courtify."
+          }
         </p>
       </div>
 
       <div className="login-right">
         <h2>Create Account</h2>
+
+        {/* User Type Selector */}
+        <div className="user-type-selector">
+          <button 
+            type="button"
+            className={`type-btn ${userType === 'player' ? 'active' : ''}`}
+            onClick={() => setUserType('player')}
+          >Player
+          </button>
+          <button 
+            type="button"
+            className={`type-btn ${userType === 'owner' ? 'active' : ''}`}
+            onClick={() => setUserType('owner')}
+          >Owner
+          </button>
+        </div>
 
         <form onSubmit={signup} className="login-form">
           <input

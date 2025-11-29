@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+src/pages/ownerDash.jsx
+src/styles/ownerDash.css
