@@ -143,7 +143,14 @@ app.get('/arenas', (req, res) => {
       a.city AS location,
       a.pricePerHour,
       a.availability,
-      a.rating
+      a.rating,
+      (
+        SELECT ai.image_path
+        FROM arena_images ai
+        WHERE ai.arena_id = a.id
+        ORDER BY ai.id ASC
+        LIMIT 1
+      ) AS image_path
     FROM arenas a
     LEFT JOIN arena_images ai ON ai.arena_id = a.id
     ORDER BY a.id DESC
