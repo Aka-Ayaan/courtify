@@ -26,3 +26,4 @@ dist-ssr
 
 src/pages/ownerDash.jsx
 src/styles/ownerDash.css
+../backend/.env
