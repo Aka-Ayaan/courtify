@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import VenueCard from "../components/VenueCard";
 import { SearchBar } from "../components/SearchBar";
@@ -15,6 +15,9 @@ export default function Dashboard() {
 
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
+  const [venues, setVenues] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -26,168 +29,43 @@ export default function Dashboard() {
     setShowLogin(true);
   };
 
-  const venues = [
-    {
-      id: 1,
-      name: "Star Sports Arena",
-      type: "Football", //a arena has multiple courts so no type for arena
-      location: "Karachi",
-      pricePerHour: 1500,
-      capacity: 12, // capacity is too  dynamic so better to remove it
-      availability: "Open Today", //availablity column gives available/close from backend
-      rating: 4.8
-    },
-    {
-      id: 2,
-      name: "Mega Turf Ground",
-      type: "Cricket",
-      location: "Lahore",
-      pricePerHour: 1800,
-      capacity: 22,
-      availability: "Available",
-      rating: 4.6
-    },
-    {
-      id: 3,
-      name: "Champion's Court",
-      type: "Tennis",
-      location: "Islamabad",
-      pricePerHour: 1200,
-      capacity: 4,
-      availability: "Fully Available",
-      rating: 4.9
-    },
-    {
-      id: 4,
-      name: "Sports Hub",
-      type: "Badminton",
-      location: "Multan",
-      pricePerHour: 800,
-      capacity: 4,
-      availability: "Open",
-      rating: 4.4
-    },
-    {
-      id: 5,
-      name: "Elite Fitness Arena",
-      type: "Basketball",
-      location: "Karachi",
-      pricePerHour: 1400,
-      capacity: 10,
-      availability: "Available",
-      rating: 4.7
-    },
-    {
-      id: 6,
-      name: "City Sports Pavilion",
-      type: "Volleyball",
-      location: "Faisalabad",
-      pricePerHour: 900,
-      capacity: 8,
-      availability: "Open",
-      rating: 4.5
-    },
-    {
-      id: 7,
-      name: "Prime Cricket Ground",
-      type: "Cricket",
-      location: "Rawalpindi",
-      pricePerHour: 2000,
-      capacity: 24,
-      availability: "Limited Slots",
-      rating: 4.3
-    },
-    {
-      id: 8,
-      name: "Olympia Sports Complex",
-      type: "Football",
-      location: "Hyderabad",
-      pricePerHour: 1600,
-      capacity: 14,
-      availability: "Fully Available",
-      rating: 4.9
-    },
-    {
-      id: 9,
-      name: "Grand Court Arena",
-      type: "Tennis",
-      location: "Karachi",
-      pricePerHour: 1100,
-      capacity: 4,
-      availability: "Open Today",
-      rating: 4.6
-    },
-    {
-      id: 10,
-      name: "National Cricket Park",
-      type: "Cricket",
-      location: "Lahore",
-      pricePerHour: 2200,
-      capacity: 26,
-      availability: "Available",
-      rating: 4.8
-    },
-    {
-      id: 11,
-      name: "Urban Sports Zone",
-      type: "Futsal",
-      location: "Islamabad",
-      pricePerHour: 1300,
-      capacity: 10,
-      availability: "Fully Available",
-      rating: 4.7
-    },
-    {
-      id: 12,
-      name: "Metro Arena",
-      type: "Badminton",
-      location: "Multan",
-      pricePerHour: 700,
-      capacity: 4,
-      availability: "Open",
-      rating: 4.2
-    },
-    {
-      id: 13,
-      name: "Arena 360",
-      type: "Basketball",
-      location: "Lahore",
-      pricePerHour: 1500,
-      capacity: 12,
-      availability: "Limited Slots",
-      rating: 4.5
-    },
-    {
-      id: 14,
-      name: "PlayMax Sports Field",
-      type: "Football",
-      location: "Quetta",
-      pricePerHour: 1200,
-      capacity: 16,
-      availability: "Available",
-      rating: 4.6
-    },
-    {
-      id: 15,
-      name: "Superior Cricket Academy",
-      type: "Cricket",
-      location: "Peshawar",
-      pricePerHour: 1900,
-      capacity: 20,
-      availability: "Open Today",
-      rating: 4.4
-    },
-    {
-      id: 16,
-      name: "City Shuttle Arena",
-      type: "Badminton",
-      location: "Karachi",
-      pricePerHour: 750,
-      capacity: 4,
-      availability: "Available",
-      rating: 4.3
+  // Fetch venues from API
+  useEffect(() => {
+    fetchVenues();
+  }, []);
+
+  const fetchVenues = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      
+      const response = await fetch('http://localhost:5000/arenas');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Transform the API data to match your VenueCard component structure
+      const venue = data.map(arena => ({
+        id: arena.id,
+        name: arena.name,
+        location: arena.location,
+        pricePerHour: arena.pricePerHour,
+        availability: arena.availability,
+        rating: arena.rating,
+        image: arena.image_path // Add image to your VenueCard if needed
+      }));
+      
+      setVenues(venue);
+    } catch (err) {
+      console.error("Error fetching venues:", err);
+      setError("Failed to load venues. Please try again later.");
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   return (
     <>

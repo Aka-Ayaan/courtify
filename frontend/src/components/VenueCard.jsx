@@ -5,17 +5,27 @@ import "./VenueCard.css";
 
 function VenueCard({
   id,
-  name = "Sample Venue",
-  type = "Football",
-  location = "Karachi",
-  pricePerHour = 500,
-  capacity = 10,
-  availability = "Available",
-  rating = 4.5,
-  image
+  name,
+  location,
+  pricePerHour,
+  availability,
+  rating,
+  imagePath
 }) {
 
   const naigate = useNavigate();
+
+  // Function to get the image source
+  const getImageSrc = () => {
+    if (!imagePath) return viteLogo;
+    
+    try {
+      // For images in your project (e.g., /src/assets/images/venue1.jpg)
+      return new URL(imagePath, import.meta.url).href;
+    } catch {
+      return viteLogo;
+    }
+  };
 
   const handleCardClick = () => {
     naigate(`/venue/`, { state: { id } })
@@ -29,8 +39,7 @@ function VenueCard({
   return (
     <div className="venue-card card" onClick={handleCardClick}>
       <div className="venue-card-image-container">
-        <img src={image || viteLogo} alt={name} className="venue-card-image" />
-        <div className="venue-card-badge">{type}</div>
+        <img src={getImageSrc()} alt={name} className="venue-card-image" />
         <div className="venue-card-rating">★ {rating}</div>
       </div>
 
@@ -38,8 +47,8 @@ function VenueCard({
         <h3 className="venue-card-title">{name}</h3>
 
         <div className="venue-card-location">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
             <circle cx="12" cy="10" r="3" />
           </svg>
           <span>{location}</span>
@@ -47,17 +56,9 @@ function VenueCard({
 
         <div className="venue-card-info">
           <div className="venue-card-info-item">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-            </svg>
-            <span>{capacity} players</span>
-          </div>
-
-          <div className="venue-card-info-item">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <circle strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" cx="12" cy="12" r="10" />
+              <polyline strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" points="12 6 12 12 16 14" />
             </svg>
             <span>{availability}</span>
           </div>
@@ -65,7 +66,7 @@ function VenueCard({
 
         <div className="venue-card-footer">
           <div className="venue-card-price">
-            <span className="venue-card-price-amount">${pricePerHour}</span>
+            <span className="venue-card-price-amount">Rs.{pricePerHour}</span>
             <span className="venue-card-price-period">/hour</span>
           </div>
 

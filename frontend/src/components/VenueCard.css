@@ -1,7 +1,7 @@
 .venue-card {
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 14px;
+  border-radius: 20px;
   overflow: hidden;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
@@ -101,16 +101,19 @@
   width: 18px;
   height: 18px;
   flex-shrink: 0;
+  stroke: currentColor;
+  fill: none;
   stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* ---- INFO ROW ---- */
 .venue-card-info {
   display: flex;
-  align-items: center;
   gap: 15px;
   margin-bottom: 20px;
-  justify-content: center;
+  justify-content: left;
 }
 
 .venue-card-info-item {

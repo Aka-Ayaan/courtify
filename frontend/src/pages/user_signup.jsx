@@ -30,7 +30,7 @@ function UserSignup({ close, showLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [userType , setUserType] = useState("player");
+  const [userType , setUserType] = useState("player"); // owner or player
   const [loading, setLoading] = useState(false);
 
   const [phoneError, setPhoneError] = useState("");
@@ -85,7 +85,7 @@ function UserSignup({ close, showLogin }) {
           password,
           name: fullName,
           phone,
-          userType
+          // userType
         })
       });
       const data = await response.json();

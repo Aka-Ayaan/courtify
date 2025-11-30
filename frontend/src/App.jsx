@@ -1,11 +1,11 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './Authcontext';
-import Dashboard from './pages/dashboard';
-import OwnerDashboard from './pages/ownerDash';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './Authcontext.jsx';
+import Dashboard from './pages/dashboard.jsx';
+// import OwnerDashboard from './pages/ownerDash';
 // import FacilityRegistration from './pages/FacilityRegistration';
 // import OwnerFacilities from './pages/OwnerFacilities';
-// import VenueDetail from './pages/FacilityDetail';
-import BookingPage from './pages/booking_page';
+import VenueDetail from './pages/venue_page.jsx';
+import BookingPage from './pages/booking_page.jsx';
 
 function AppRoutes () {
   const { user, isOwner } = useAuth();
@@ -39,9 +39,6 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        {/* <Routes>
-          <Route path="/" element={<OwnerDashboard />} />
-        </Routes> */}
         <AppRoutes />
       </BrowserRouter>
     </AuthProvider>

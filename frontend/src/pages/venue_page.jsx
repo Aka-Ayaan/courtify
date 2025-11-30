@@ -55,6 +55,32 @@ function VenueDetail() {
     ]
   };
 
+  // Adjut page according to the following venue data
+  //   const mockVenue = {
+  //   id: 1,
+  //   name: "Nisha Millets Swimming Academy @ Basecamp BCU",
+  //   address: "Palace Road, Bengaluru", // location
+  //   price: 250,
+  //   availability: "Available", // available/not available
+  //   rating: 4.7,
+  //   images: [
+  //     viteLogo,
+  //     viteLogo,
+  //     viteLogo,
+  //     viteLogo,
+  //     viteLogo
+  //   ],
+  //   sports: ["Swimming", "Aqua Aerobics", "Diving"], // all types of sports available at venue
+  //   courts: {
+  //     "Swimming": ["Olympic Pool", "Training Pool", "Kids Pool"],
+  //     "Aqua Aerobics": ["Main Pool"],
+  //     "Diving": ["Diving Pool"]
+  //   },                                  // number of courts wrt type of sport
+  //   timing: "8 AM - 9 PM",
+  //   amenities: ["Changing Rooms", "Showers", "Locker", "Trainer", "Equipment"], // per venue not per court
+  //   description: "Premium swimming academy with professional trainers and well-maintained pool facilities.",
+  // };
+
   const handleBookNow = () => { navigate("/booking", {state:{venue}}) };
 
   const formatPrice = (price) => {
