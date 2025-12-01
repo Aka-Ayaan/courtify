@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './Authcontext.jsx';
 import Dashboard from './pages/dashboard.jsx';
-// import OwnerDashboard from './pages/ownerDash';
+import OwnerDashboard from './pages/ownerDash';
 // import FacilityRegistration from './pages/FacilityRegistration';
 // import OwnerFacilities from './pages/OwnerFacilities';
 import VenueDetail from './pages/venue_page.jsx';
@@ -39,7 +39,10 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <AppRoutes />
+        {/* <AppRoutes /> */}
+        <Routes>
+          <Route path="/*" element={<OwnerDashboard />} />
+        </Routes>
       </BrowserRouter>
     </AuthProvider>
   );
