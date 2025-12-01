@@ -31,48 +31,72 @@ app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.use(cors());
 app.use(express.json());
 
-// ------------------------
+// ------------------------ 
 // LOGIN
 // ------------------------
 app.get('/auth/validate', async (req, res) => {
-  const { email, password } = req.query;
+  const { email, password, userType } = req.query;
 
   if (!email || !password)
     return res.status(400).json({ error: "Email and password required" });
 
-  const query = "SELECT id, email, password_hash, name, phone, is_active FROM players WHERE email = ?";
+  if (userType === 'player'){
+    const query = "SELECT id, email, password_hash, name, phone, is_active FROM players WHERE email = ?";
 
-  db.query(query, [email], async (err, results) => {
-    if (err) return res.status(500).json({ error: "Database error" });
+    db.query(query, [email], async (err, results) => {
+      if (err) return res.status(500).json({ error: "Database error" });
 
-    if (results.length === 0)
-      return res.status(401).json({ error: "Invalid email or password" });
+      if (results.length === 0)
+        return res.status(401).json({ error: "Invalid email or password" });
 
-    const user = results[0];
+      const user = results[0];
 
-    if (user.is_active === 0)
-      return res.status(403).json({ error: "Please verify your email first" });
+      if (user.is_active === 0)
+        return res.status(403).json({ error: "Please verify your email first" });
 
-    const match = await bcrypt.compare(password, user.password_hash);
+      const match = await bcrypt.compare(password, user.password_hash);
 
-    if (!match)
-      return res.status(401).json({ error: "Invalid email or password" });
+      if (!match)
+        return res.status(401).json({ error: "Invalid email or password" });
 
-    return res.json({
-      authenticated: true,
-      message: "Login successful",
-      userId: user.id,
-      email: user.email,
-      name: user.name
+      return res.json({
+        authenticated: true,
+        message: "Login successful",
+        userId: user.id,
+        email: user.email,
+        name: user.name
+      });
     });
-  });
+  } else if (userType === 'owner') {
+    const query = "SELECT id, name, email, phone, password_hash FROM arena_owners WHERE email = ?";
+    db.query(query, [email], async (err, results) => {
+      if (err) return res.status(500).json({ error: "Database error" });
+      if (results.length === 0)
+        return res.status(401).json({ error: "Invalid email or password" });
+      const user = results[0];
+      if(user.is_active === 0)
+        return res.status(403).json({ error: "Please verify your email first" });
+      const match = await bcrypt.compare(password, user.password_hash);
+      if (!match)
+        return res.status(401).json({ error: "Invalid email or password" });
+      return res.json({
+        authenticated: true,
+        message: "Login successful",
+        userId: user.id,
+        email: user.email,
+        name: user.name
+      });
+    });
+  } else {
+    return res.status(400).json({ error: "Invalid user type" });
+  }  
 });
 
 // ------------------------
 // SIGNUP
 // ------------------------
 app.post('/auth/signup', async (req, res) => {
-  const { email, password, name, phone } = req.body;
+  const { email, password, name, phone, userType } = req.body;
 
   if (!email || !password)
     return res.status(400).json({ error: "Email and password required" });
@@ -81,32 +105,59 @@ app.post('/auth/signup', async (req, res) => {
   if (!emailRegex.test(email))
     return res.status(400).json({ error: "Invalid email format" });
 
-  db.query("SELECT id FROM players WHERE email = ?", [email], async (err, results) => {
-    if (results.length > 0)
-      return res.status(409).json({ error: "Email already registered" });
+  if (userType === 'player') {
+    db.query("SELECT id FROM players WHERE email = ?", [email], async (err, results) => {
+      if (results.length > 0)
+        return res.status(409).json({ error: "Email already registered" });
 
-    const passwordHash = await bcrypt.hash(password, 10);
-    const token = crypto.randomBytes(32).toString("hex");
+      const passwordHash = await bcrypt.hash(password, 10);
+      const token = crypto.randomBytes(32).toString("hex");
 
-    const insert = `
-      INSERT INTO players (email, password_hash, name, phone, is_active, verification_token)
-      VALUES (?, ?, ?, ?, 0, ?)
-    `;
+      const insert = `
+        INSERT INTO players (email, password_hash, name, phone, is_active, verification_token)
+        VALUES (?, ?, ?, ?, 0, ?)
+      `;
 
-    db.query(insert, [email, passwordHash, name, phone, token], async (err, _) => {
-      if (err) return res.status(500).json({ error: "Database insert failed" });
+      db.query(insert, [email, passwordHash, name, phone, token], async (err, _) => {
+        if (err) return res.status(500).json({ error: "Database insert failed" });
 
-      await sendVerificationEmail(email, token);
+        await sendVerificationEmail(email, token);
 
-      return res.status(201).json({
-        message: "Account created. Check your email to verify."
+        return res.status(201).json({
+          message: "Account created. Check your email to verify."
+        });
       });
     });
-  });
+  } else if (userType === 'owner') {
+    db.query("SELECT id FROM arena_owners WHERE email = ?", [email], async (err, results) => {
+      if (results.length > 0)
+        return res.status(409).json({ error: "Email already registered" });
+
+      const passwordHash = await bcrypt.hash(password, 10);
+      const token = crypto.randomBytes(32).toString("hex");
+
+      const insert = `
+        INSERT INTO arena_owners (name, email, phone, password_hash,  is_active, verification_token)
+        VALUES (?, ?, ?, ?, 0, ?)
+      `;
+
+      db.query(insert, [name, email, phone, passwordHash, token], async (err, _) => {
+        if (err) return res.status(500).json({ error: "Database insert failed" });
+
+        await sendVerificationEmail(email, token);
+
+        return res.status(201).json({
+          message: "Account created. Check your email to verify."
+        });
+      });
+    });
+  } else {
+    return res.status(400).json({ error: "Invalid user type" });
+  }
 });
 
 // ------------------------
-// VERIFY EMAIL
+// VERIFY EMAIL FOR BOTH USERS
 // ------------------------
 app.get('/auth/verify', (req, res) => {
   const { token } = req.query;
@@ -115,19 +166,47 @@ app.get('/auth/verify', (req, res) => {
     return res.status(400).send('Invalid verification link');
   }
 
-  const query = 'UPDATE players SET is_active = 1, verification_token = NULL WHERE verification_token = ?';
-  db.query(query, [token], (err, result) => {
+  // Query 1: Check in players
+  const verifyPlayer = `
+    UPDATE players 
+    SET is_active = 1, verification_token = NULL 
+    WHERE verification_token = ?
+  `;
+
+  // Query 2: Check in arena_owners
+  const verifyOwner = `
+    UPDATE arena_owners 
+    SET is_active = 1, verification_token = NULL 
+    WHERE verification_token = ?
+  `;
+
+  // Try verifying as a player first
+  db.query(verifyPlayer, [token], (err, playerResult) => {
     if (err) {
       console.error('Database error:', err);
       return res.status(500).send('Server error');
     }
 
-    if (result.affectedRows === 0) {
-      return res.status(400).send('Invalid or expired token');
+    if (playerResult.affectedRows > 0) {
+      // Player verified successfully
+      return res.redirect(`${process.env.FRONTEND_URL}/?verified=1&type=player`);
     }
 
-    // Redirect to frontend login page with a query parameter
-    return res.redirect(`${process.env.FRONTEND_URL}/?verified=1`);
+    // If no player was verified, try arena owner
+    db.query(verifyOwner, [token], (err, ownerResult) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).send('Server error');
+      }
+
+      if (ownerResult.affectedRows > 0) {
+        // Owner verified successfully
+        return res.redirect(`${process.env.FRONTEND_URL}/?verified=1&type=owner`);
+      }
+
+      // If token matches neither table
+      return res.status(400).send('Invalid or expired token');
+    });
   });
 });
 

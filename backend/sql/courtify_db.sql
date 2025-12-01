@@ -48,12 +48,15 @@ CREATE TABLE IF NOT EXISTS arena_owners (
   name VARCHAR(100) NOT NULL,
   email VARCHAR(100) UNIQUE NOT NULL,
   phone VARCHAR(20)
+  password_hash VARCHAR(255) NOT NULL,
+  is_active TINYINT(1) DEFAULT 0,
+  verification_token VARCHAR(255)
 );
 
-INSERT INTO arena_owners (name, email, phone)
+INSERT INTO arena_owners (name, email, phone, password_hash, is_active)
 VALUES
-('Ayan Merchant', 'ayan@example.com', '03009998888'),
-('Hamza Khan', 'hamza@example.com', '03001112222');
+('Ayan Merchant', 'ayan@example.com', '03009998888', '$2b$10$abcdefghijklmnopqrstuv', 1),
+('Hamza Khan', 'hamza@example.com', '03001112222', '$2b$10$abcdefghijklmnopqrstuv', 1);
 
 
 /* ==========================================================
