@@ -215,8 +215,20 @@ CREATE TABLE IF NOT EXISTS bookings (
   FOREIGN KEY (status_id) REFERENCES booking_status(id)
 );
 
--- /* Dummy Bookings */
--- INSERT INTO bookings (player_id, court_id, booking_date, start_time, end_time, status_id)
--- VALUES
--- (1, 1, '2025-01-10', '14:00', '15:00', 2),
--- (2, 3, '2025-01-11', '16:00', '17:30', 1);
+INSERT INTO bookings (player_id, court_id, booking_date, start_time, end_time, status_id)
+VALUES 
+-- Past bookings
+(1, 1, '2025-11-20', '18:00:00', '19:00:00', 2), -- Past futsal (confirmed)
+(1, 2, '2025-11-22', '15:00:00', '16:30:00', 3), -- Past padel (cancelled)
+(1, 3, '2025-11-25', '10:00:00', '11:30:00', 2), -- Past cricket (confirmed)
+
+-- Upcoming bookings
+(1, 4, '2025-12-05', '14:30:00', '16:00:00', 1), -- Future futsal (pending)
+(1, 5, '2025-12-08', '09:00:00', '10:00:00', 2), -- Future padel (confirmed)
+(1, 6, '2025-12-10', '16:00:00', '17:00:00', 1), -- Future tennis (pending)
+
+-- More upcoming with different durations
+(1, 1, '2025-12-12', '19:00:00', '20:30:00', 2), -- 1.5 hours futsal (confirmed)
+(1, 2, '2025-12-15', '11:00:00', '12:00:00', 1), -- 1 hour padel (pending)
+(1, 3, '2025-12-18', '13:00:00', '15:00:00', 2), -- 2 hours cricket (confirmed)
+(1, 4, '2025-12-20', '17:00:00', '18:00:00', 3); -- 1 hour futsal (cancelled)
