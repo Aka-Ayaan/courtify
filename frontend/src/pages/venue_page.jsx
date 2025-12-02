@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../Authcontext.jsx";
 import { Navbar } from "../components/NavBar";
@@ -15,76 +15,101 @@ function VenueDetail() {
   const { user } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
+  const [venue, setVenue] = useState();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
 
   const venueID = location.state;
 
-  // Mock data - replace with actual API call
-  const mockVenue = {
-    id: 1,
-    name: "Nisha Millets Swimming Academy @ Basecamp BCU",
-    address: "Palace Road, Bengaluru",
-    images: [
-      viteLogo,
-      viteLogo,
-      viteLogo,
-      viteLogo,
-      viteLogo
-    ],
-    rating: 4.2,
-    reviews: 12,
-    price: 250,
-    priceUnit: "hour",
-    location: "Sports Block (behind Freedom park), Dr Marendra Singh Bengaluru City University, Palace Road, Bangalore - 560001 (Main Entrance gate next to Culinary)",
-    sports: ["Swimming", "Aqua Aerobics", "Diving"],
-    courts: {
-      "Swimming": ["Olympic Pool", "Training Pool", "Kids Pool"],
-      "Aqua Aerobics": ["Main Pool"],
-      "Diving": ["Diving Pool"]
-    },
-    type: "Indoor Pool",
-    timing: "8 AM - 9 PM",
-    amenities: ["Changing Rooms", "Showers", "Locker", "Trainer", "Equipment"],
-    description: "Premium swimming academy with professional trainers and well-maintained pool facilities.",
-    rules: [
-      "Swimming costume is mandatory",
-      "Shower before entering the pool",
-      "No diving in shallow areas",
-      "Follow instructor guidelines"
-    ]
+  // Helper function to convert image path to URL
+  const convertImagePath = (path) => {
+    if (!path) return viteLogo;
+    if (path.startsWith('http') || path.startsWith('data:')) {
+      return path; // Already a full URL
+    }
+    
+    try {
+      const cleanPath = image.startsWith('/') ? image.slice(1) : image;
+      const adjustedPath = `../${cleanPath}`;
+      return new URL(adjustedPath, import.meta.url).href;
+    } catch (error) {
+      console.error("Error converting image path:", error);
+      return viteLogo;
+    }
   };
 
-  // Adjut page according to the following venue data
-  //   const mockVenue = {
-  //   id: 1,
-  //   name: "Nisha Millets Swimming Academy @ Basecamp BCU",
-  //   address: "Palace Road, Bengaluru", // location
-  //   price: 250,
-  //   availability: "Available", // available/not available
-  //   rating: 4.7,
-  //   images: [
-  //     viteLogo,
-  //     viteLogo,
-  //     viteLogo,
-  //     viteLogo,
-  //     viteLogo
-  //   ],
-  //   sports: ["Swimming", "Aqua Aerobics", "Diving"], // all types of sports available at venue
-  //   courts: {
-  //     "Swimming": ["Olympic Pool", "Training Pool", "Kids Pool"],
-  //     "Aqua Aerobics": ["Main Pool"],
-  //     "Diving": ["Diving Pool"]
-  //   },                                  // number of courts wrt type of sport
-  //   timing: "8 AM - 9 PM",
-  //   amenities: ["Changing Rooms", "Showers", "Locker", "Trainer", "Equipment"], // per venue not per court
-  //   description: "Premium swimming academy with professional trainers and well-maintained pool facilities.",
-  // };
+  if (loading || !venue) {
+  return (
+    <div className="loading-container">
+      <div className="spinner"></div>
+      <p>Loading venue details...</p>
+    </div>
+  );
+}
 
-  const handleBookNow = () => { navigate("/booking", {state:{venue}}) };
+
+  // Fetch venues from API
+  useEffect(() => {
+    fetchVenue();
+  }, []);
+
+  const fetchVenue = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      
+      const response = await fetch(`http://localhost:5000/arenas/${venueID}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("Raw API data:", data);
+      
+      // Transform the API data to match your VenueDetail component structure
+      const venue = {
+        id: data.id,
+        name: data.name,
+        address: data.address,
+        city: data.city,
+        rating: data.rating,
+        price: data.pricePerHour,
+        priceUnit: "hour",
+        availability: data.availability,
+        timing: data.timing,
+        amenities: data.amenities,
+        description: data.description,
+        rules: data.rules,
+
+        images: Array.isArray(data.images)
+          ? data.images.map(img => convertImagePath(img))
+          : [convertImagePath(data.image)],
+
+        courts: data.courts,
+      };
+
+      console.log("Final transformed venue:", venue);
+      setVenue(venue);
+    } catch (err) {
+      setError("Failed to fetch venue details. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBookNow = () => {
+    if (!user) {
+      setShowLogin(true);
+      return;
+    }
+    navigate("/booking", { state: venue });
+  }
 
   const formatPrice = (price) => {
-    return `₹${price}/hour`;
+    return `Rs.${price}/hour`;
   };
 
   const handleShowSignup = () => {
@@ -94,10 +119,6 @@ function VenueDetail() {
   const handleShowLogin = () => {
     setShowLogin(true);
   };
-
-  // Query venue data based on ID
-  // Use mockvenue for now until API is integrated
-  const venue = mockVenue;
 
   return (
     <>
@@ -151,7 +172,7 @@ function VenueDetail() {
             <div className="venue-header">
               <div className="venue-meta">
                 <div className="venue-rating-price">
-                  <span className="rating">⭐ {venue.rating} ({venue.reviews} ratings)</span>
+                  <span className="rating">⭐ {venue.rating}</span>
                   <span className="price">{formatPrice(venue.price)}</span>
                 </div>
               </div>
@@ -182,13 +203,6 @@ function VenueDetail() {
               </button>
             </div>
 
-            {/* Additional Actions */}
-            <div className="action-buttons">
-              <button className="action-btn">Search</button>
-              <button className="action-btn">View Settings</button>
-              <button className="action-btn">Save Settings</button>
-            </div>
-
           </div>
         </div>
 
@@ -217,7 +231,6 @@ function VenueDetail() {
             ))}
           </ul>
         </section>
-
       </div>
     </>
   );

@@ -10,18 +10,20 @@ function VenueCard({
   pricePerHour,
   availability,
   rating,
-  imagePath
+  image
 }) {
 
   const naigate = useNavigate();
 
   // Function to get the image source
   const getImageSrc = () => {
-    if (!imagePath) return viteLogo;
+    if (!image) return viteLogo;
     
     try {
-      // For images in your project (e.g., /src/assets/images/venue1.jpg)
-      return new URL(imagePath, import.meta.url).href;
+      // Remove leading slash if present, then add "../"
+      const cleanPath = image.startsWith('/') ? image.slice(1) : image;
+      const adjustedPath = `../${cleanPath}`;
+      return new URL(adjustedPath, import.meta.url).href;
     } catch {
       return viteLogo;
     }
@@ -35,6 +37,8 @@ function VenueCard({
     e.stopPropagation();
     naigate(`/venue/`, { state: { id } });
   }
+
+  console.log("VenueCard image path:", image);
 
   return (
     <div className="venue-card card" onClick={handleCardClick}>

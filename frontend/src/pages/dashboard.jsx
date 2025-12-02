@@ -55,7 +55,7 @@ export default function Dashboard() {
         pricePerHour: arena.pricePerHour,
         availability: arena.availability,
         rating: arena.rating,
-        image: arena.image_path // Add image to your VenueCard if needed
+        image: arena.image_path
       }));
       
       setVenues(venue);

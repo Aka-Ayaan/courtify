@@ -1,5 +1,5 @@
 // pages/OwnerDashboard.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../Authcontext.jsx";
 import { useNavigate } from "react-router-dom";
 import "../styles/ownerDash.css";
@@ -15,6 +15,8 @@ export default function OwnerDash() {
     monthlyRevenue: 0,
     pendingApprovals: 0
   });
+
+  const facilitiesSectionRef = useRef(null);
 
   // Redirect if not owner
   useEffect(() => {
@@ -86,6 +88,15 @@ export default function OwnerDash() {
         todayBookings: 0,
         monthlyRevenue: 0,
         pendingApprovals: 0
+      });
+    }
+  };
+
+  const scrollToFacilities = () => {
+    if (facilitiesSectionRef.current) {
+      facilitiesSectionRef.current.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
       });
     }
   };
@@ -163,7 +174,7 @@ export default function OwnerDash() {
             </button>
             <button 
               className="action-btn secondary"
-              onClick={() => navigate('/owner/facilities')}
+              onClick={scrollToFacilities}
             >
               <span className="action-icon">🏢</span>
               <div className="action-text">
@@ -171,21 +182,11 @@ export default function OwnerDash() {
                 <small>View and edit all venues</small>
               </div>
             </button>
-            <button 
-              className="action-btn secondary"
-              onClick={() => navigate('/owner/bookings')}
-            >
-              <span className="action-icon">📅</span>
-              <div className="action-text">
-                <strong>View All Bookings</strong>
-                <small>Check upcoming sessions</small>
-              </div>
-            </button>
           </div>
         </div>
 
         {/* Recent Facilities */}
-        <div className="recent-facilities">
+        <div className="recent-facilities" ref={facilitiesSectionRef}>
           <div className="section-header">
             <h2>Your Facilities</h2>
             <button 

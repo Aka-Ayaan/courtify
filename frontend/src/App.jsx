@@ -39,10 +39,10 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        {/* <AppRoutes /> */}
-        <Routes>
-          <Route path="/*" element={<Dashboard />} />
-        </Routes>
+        <AppRoutes />
+        {/* <Routes>
+          <Route path="/*" element={<OwnerDashboard />} />
+        </Routes> */}
       </BrowserRouter>
     </AuthProvider>
   );
