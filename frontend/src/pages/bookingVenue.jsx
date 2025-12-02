@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../Authcontext.jsx";
-import UserLogin from "./user_login";
-import { Navbar } from "../components/NavBar";
+import UserLogin from "./user_login.jsx";
+import { Navbar } from "../components/NavBar.jsx";
 import "../styles/booking.css";
 import "../styles/global.css";
 

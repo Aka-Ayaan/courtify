@@ -23,6 +23,8 @@ function UserLogin({ close,showSignup }) {
       });
 
       const data = await response.json();
+      console.log("Login response data:", data);
+      console.log("Login user type:", userType);
       
       if (response.ok && data.authenticated) {
         setUser(data);

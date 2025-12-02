@@ -64,7 +64,8 @@ app.get('/auth/validate', async (req, res) => {
         message: "Login successful",
         userId: user.id,
         email: user.email,
-        name: user.name
+        name: user.name,
+        userType: "player"
       });
     });
   } else if (userType === 'owner') {
@@ -84,7 +85,8 @@ app.get('/auth/validate', async (req, res) => {
         message: "Login successful",
         userId: user.id,
         email: user.email,
-        name: user.name
+        name: user.name,
+        userType: "owner"
       });
     });
   } else {

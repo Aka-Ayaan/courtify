@@ -35,7 +35,7 @@ function VenueCard({
 
   const handleBookNow = (e) => {
     e.stopPropagation();
-    naigate(`/venue/`, { state: { id } });
+    naigate(`/venue`, { state: { id } });
   }
 
   console.log("VenueCard image path:", image);

@@ -5,7 +5,9 @@ import OwnerDashboard from './pages/ownerDash';
 // import FacilityRegistration from './pages/FacilityRegistration';
 // import OwnerFacilities from './pages/OwnerFacilities';
 import VenueDetail from './pages/venue_page.jsx';
-import BookingPage from './pages/booking_page.jsx';
+import BookingPage from './pages/bookingVenue.jsx';
+import PlayerBookings from './pages/playerBookings.jsx';
+import AboutPage from './pages/about.jsx';
 
 function AppRoutes () {
   const { user, isOwner } = useAuth();
@@ -16,6 +18,9 @@ function AppRoutes () {
       <Route path="/" element={<Dashboard />} />
       <Route path="/venue" element={<VenueDetail />} />
       <Route path="/booking" element={<BookingPage />} />
+      <Route path="/playerBook" element={<PlayerBookings />} />
+      <Route path="/about" element={<AboutPage />} />
+
 
       {/* Owner protected routes */}
       <Route 
@@ -41,7 +46,7 @@ function App() {
       <BrowserRouter>
         <AppRoutes />
         {/* <Routes>
-          <Route path="/*" element={<OwnerDashboard />} />
+          <Route path="/*" element={<PlayerBookings />} />
         </Routes> */}
       </BrowserRouter>
     </AuthProvider>
