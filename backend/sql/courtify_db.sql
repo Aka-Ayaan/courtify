@@ -36,8 +36,13 @@ CREATE TABLE IF NOT EXISTS players (
 /* Dummy Players */
 INSERT INTO players (email, password_hash, name, phone, is_active)
 VALUES
-('john@example.com', '$2b$10$abcdefghijklmnopqrstuv', 'John Doe', '03001234567', 1),
-('sara@example.com', '$2b$10$abcdefghijklmnopqrstuv', 'Sara Ali', '03111234567', 1);
+('player@example.com',
+ '$2b$10$dXJrRUBX04h8xqv4LwyHcuWkqc4O9.6u1tpfF8F3lI6W6BV0xT1tW', /* 12345678 */
+ 'Test Player',
+ '03001234567',
+ 1
+);
+
 
 
 /* ==========================================================
@@ -53,10 +58,21 @@ CREATE TABLE IF NOT EXISTS arena_owners (
   verification_token VARCHAR(255)
 );
 
+/* Dummy Arena Owners */
 INSERT INTO arena_owners (name, email, phone, password_hash, is_active)
 VALUES
-('Ayaan Merchant', 'ayaan@example.com', '03009998888', '$2b$10$abcdefghijklmnopqrstuv', 1),
-('Hamza Khan', 'hamza@example.com', '03001112222', '$2b$10$abcdefghijklmnopqrstuv', 1);
+('Marksman Admin',
+ 'marksman_admin@example.com',
+ '03001112222',
+ '$2b$10$dXJrRUBX04h8xqv4LwyHcuWkqc4O9.6u1tpfF8F3lI6W6BV0xT1tW',
+ 1
+),
+('Titan Admin',
+ 'titan_admin@example.com',
+ '03003334444',
+ '$2b$10$dXJrRUBX04h8xqv4LwyHcuWkqc4O9.6u1tpfF8F3lI6W6BV0xT1tW',
+ 1
+);
 
 
 /* ==========================================================
@@ -94,7 +110,7 @@ INSERT INTO arenas (
 )
 VALUES
 (1,
- 'Clifton Padel Arena',
+ 'Legends Arena',
  'Karachi',
  'Clifton Block 5',
  4500,
@@ -102,12 +118,12 @@ VALUES
  4.50,
  '8 AM - 11 PM',
  JSON_ARRAY('Changing Rooms', 'Showers', 'Parking', 'Equipment Rental'),
- 'A premium padel facility located near Clifton Beach, known for its well-maintained courts and vibrant community events.',
+ 'A premium multi-sport facility in Clifton with padel and futsal courts designed for a high-quality sports experience.',
  JSON_ARRAY('Proper sports shoes required', 'Arrive 10 minutes early', 'Respect booking times')
 ),
 
-(2,
- 'Gulshan Smash Arena',
+(1,
+ 'Marksman Arena',
  'Karachi',
  'Gulshan Block 10',
  3500,
@@ -115,12 +131,12 @@ VALUES
  4.20,
  '9 AM - 12 AM',
  JSON_ARRAY('Locker Room', 'Café', 'WiFi', 'Rental Rackets'),
- 'A popular neighborhood sports venue offering high-quality courts suitable for both beginners and experienced players.',
+ 'A popular arena in Gulshan offering cricket and futsal courts suitable for all skill levels.',
  JSON_ARRAY('No smoking inside venue', 'Follow staff instructions', 'Bring your own water bottle')
 ),
 
-(1,
- 'Defense Tennis Hub',
+(2,
+ 'Titan Arena',
  'Karachi',
  'DHA Phase 6',
  5000,
@@ -128,8 +144,8 @@ VALUES
  4.00,
  '7 AM - 10 PM',
  JSON_ARRAY('Rest Area', 'Parking', 'Professional Coaches'),
- 'A well-established tennis facility in DHA offering multiple courts and coaching for players of all ages.',
- JSON_ARRAY('Coaching sessions must be pre-booked', 'Wear proper tennis attire', 'Do not litter on the courts')
+ 'A well-established sports complex in DHA featuring tennis and padel courts with coaching facilities.',
+ JSON_ARRAY('Coaching sessions must be pre-booked', 'Wear proper sports attire', 'Do not litter on the courts')
 );
 
 
@@ -144,12 +160,13 @@ CREATE TABLE IF NOT EXISTS arena_images (
   FOREIGN KEY (arena_id) REFERENCES arenas(id)
 );
 
-/* Dummy Arena Images (main images) */
+/* Arena Images */
 INSERT INTO arena_images (arena_id, image_path)
 VALUES
-(1, '/assets/arena1_main.jpg'),
-(2, '/assets/arena2_main.jpg'),
-(3, '/assets/arena3_main.jpg');
+(1, '/assets/arena/legendsArenaMain.png'),
+(2, '/assets/arena/MarksmanArenaMain.png'),
+(3, '/assets/arena/titanArenaMain.png');
+
 
 
 /* ==========================================================
@@ -165,13 +182,21 @@ CREATE TABLE IF NOT EXISTS courts (
   FOREIGN KEY (court_type_id) REFERENCES court_types(id)
 );
 
-/* Dummy Courts */
+/* Courts */
 INSERT INTO courts (arena_id, court_type_id, name, image_path)
 VALUES
-(1, 1, 'Padel Court A', '/assets/courts/padel_a.jpg'),
-(1, 1, 'Padel Court B', '/assets/courts/padel_b.jpg'),
-(2, 2, 'Tennis Court A', '/assets/courts/tennis_a.jpg'),
-(3, 3, 'Badminton Court A', '/assets/courts/badminton_a.jpg');
+-- Legends Arena (ID 1)
+(1, 4, 'Futsal Court', '/assets/courts/legendsArenaFutsal.png'),
+(1, 1, 'Padel Court', '/assets/courts/legendsArenaPaddle.png'),
+
+-- Marksman Arena (ID 2)
+(2, 3, 'Cricket Court', '/assets/courts/MarksmanArenaCricket.png'),
+(2, 4, 'Futsal Court', '/assets/courts/MarksmanArenaFutsal.png'),
+
+-- Titan Arena (ID 3)
+(3, 1, 'Padel Court', '/assets/courts/titanArenaPaddle.png'),
+(3, 2, 'Tennis Court', '/assets/courts/titanArenaTennis.png');
+
 
 
 /* ==========================================================
@@ -190,8 +215,8 @@ CREATE TABLE IF NOT EXISTS bookings (
   FOREIGN KEY (status_id) REFERENCES booking_status(id)
 );
 
-/* Dummy Bookings */
-INSERT INTO bookings (player_id, court_id, booking_date, start_time, end_time, status_id)
-VALUES
-(1, 1, '2025-01-10', '14:00', '15:00', 2),
-(2, 3, '2025-01-11', '16:00', '17:30', 1);
+-- /* Dummy Bookings */
+-- INSERT INTO bookings (player_id, court_id, booking_date, start_time, end_time, status_id)
+-- VALUES
+-- (1, 1, '2025-01-10', '14:00', '15:00', 2),
+-- (2, 3, '2025-01-11', '16:00', '17:30', 1);
