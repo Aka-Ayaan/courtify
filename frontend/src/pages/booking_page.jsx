@@ -16,13 +16,13 @@ function BookingPage() {
   const venue = location.state?.venue || {
     id: 1,
     name: "Nisha Millets Swimming Academy @ Basecamp BCU",
-    sports: ["Swimming", "Aqua Aerobics", "Diving"],
     timing: "8 AM - 8 PM",
     courts: {
       "Swimming": ["Olympic Pool", "Training Pool", "Kids Pool"],
       "Aqua Aerobics": ["Main Pool"],
       "Diving": ["Diving Pool"]
     },
+    sports: ["Swimming", "Aqua Aerobics", "Diving"],
     price: 250,
     description: "Premium swimming academy with professional trainers and well-maintained pool facilities."
   };
@@ -79,7 +79,8 @@ function BookingPage() {
   const availableCourts = selectedSport ? venue.courts[selectedSport] || [] : [];
 
   // Calculate total price
-  const totalPrice = venue.price * quantity;
+  const hours = parseInt(duration.split(" ")[0]);
+  const totalPrice = venue.price * hours;
 
   // Set minimum date to today
   const today = new Date().toISOString().split('T')[0];
@@ -151,7 +152,7 @@ function BookingPage() {
                   required
                 >
                   <option value="">Choose a sport</option>
-                  {venue.sports.map((sport, index) => (
+                  {(venue.sports || []).map((sport, index) => (
                     <option key={index} value={sport}>{sport}</option>
                   ))}
                 </select>
@@ -281,7 +282,7 @@ function BookingPage() {
 
               <div className="summary-item total">
                 <span>Total Amount:</span>
-                <span>₹{totalPrice}</span>
+                <span>Rs. {totalPrice}</span>
               </div>
 
               {/* Proceed Button */}

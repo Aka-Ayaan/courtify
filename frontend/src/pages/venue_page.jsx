@@ -15,13 +15,14 @@ function VenueDetail() {
   const { user } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
-  const [venue, setVenue] = useState();
+  const [venue, setVenue] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
 
-  const venueID = location.state;
+  const venueID = location.state.id;
+  console.log("VenueDetail venueID from state:", venueID);
 
   // Helper function to convert image path to URL
   const convertImagePath = (path) => {
@@ -31,7 +32,7 @@ function VenueDetail() {
     }
     
     try {
-      const cleanPath = image.startsWith('/') ? image.slice(1) : image;
+      const cleanPath = path.startsWith('/') ? path.slice(1) : path;
       const adjustedPath = `../${cleanPath}`;
       return new URL(adjustedPath, import.meta.url).href;
     } catch (error) {
@@ -40,27 +41,12 @@ function VenueDetail() {
     }
   };
 
-  if (loading || !venue) {
-  return (
-    <div className="loading-container">
-      <div className="spinner"></div>
-      <p>Loading venue details...</p>
-    </div>
-  );
-}
-
-
-  // Fetch venues from API
-  useEffect(() => {
-    fetchVenue();
-  }, []);
-
   const fetchVenue = async () => {
     try {
       setLoading(true);
       setError("");
       
-      const response = await fetch(`http://localhost:5000/arenas/${venueID}`);
+      const response = await fetch(`http://localhost:5000/arena/${venueID}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -89,6 +75,7 @@ function VenueDetail() {
           : [convertImagePath(data.image)],
 
         courts: data.courts,
+        sports: Object.keys(data.courts || {}),
       };
 
       console.log("Final transformed venue:", venue);
@@ -100,12 +87,26 @@ function VenueDetail() {
     }
   };
 
+  // Fetch venues from API
+  useEffect(() => {
+    fetchVenue();
+  }, []);
+
+  if (loading || !venue) {
+    return (
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p>Loading venue details...</p>
+      </div>
+    );
+  }
+
   const handleBookNow = () => {
     if (!user) {
       setShowLogin(true);
       return;
     }
-    navigate("/booking", { state: venue });
+    navigate("/booking",{ state: { venue } });
   }
 
   const formatPrice = (price) => {
@@ -194,7 +195,7 @@ function VenueDetail() {
               {/* Location Section */}
               <div className="info-section">
                 <h3>📍 Location</h3>
-                <p>{venue.location}</p>
+                <p>{venue.address}, {venue.city}</p>
               </div>
 
               {/* Book Now Button */}
