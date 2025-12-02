@@ -263,10 +263,19 @@ app.get("/arena/:id", (req, res) => {
     WHERE arena_id = ?;
   `;
 
+  // const courtsQuery = `
+  //   SELECT distinct ct.type_name
+  //   FROM courts c
+  //   JOIN court_types ct ON c.court_type_id = ct.id
+  //   WHERE c.arena_id = ?;
+  // `;
   const courtsQuery = `
-    SELECT distinct ct.type_name
+    SELECT 
+      ct.type_name AS type,
+      c.name AS court_name
     FROM courts c
-    JOIN court_types ct ON c.court_type_id = ct.id
+    JOIN court_types ct 
+      ON c.court_type_id = ct.id
     WHERE c.arena_id = ?;
   `;
 
@@ -318,7 +327,15 @@ app.get("/arena/:id", (req, res) => {
       db.query(courtsQuery, [arenaId], (err, courtsResult) => {
         if (err) return res.status(500).json({ error: "Database error (courts)" });
 
-        const courts = courtsResult.map(c => c.type_name );
+        // GROUP courts: {type_name: [court1, court2]}
+        const groupedCourts = {};
+
+        courtsResult.forEach(row => {
+          if (!groupedCourts[row.type]) {
+            groupedCourts[row.type] = [];
+          }
+          groupedCourts[row.type].push(row.court_name);
+        });
 
         // FINAL RESPONSE
         return res.json({
@@ -334,7 +351,7 @@ app.get("/arena/:id", (req, res) => {
           description: arena.description,
           rules: arena.rules,
           images: images,
-          courts: courts
+          courts: groupedCourts
         });
       });
     });

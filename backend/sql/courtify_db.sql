@@ -124,7 +124,7 @@ VALUES
 
 (1,
  'Marksman Arena',
- 'Karachi',
+ 'Lahore',
  'Gulshan Block 10',
  3500,
  'available',
