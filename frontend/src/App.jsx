@@ -41,7 +41,7 @@ function App() {
       <BrowserRouter>
         {/* <AppRoutes /> */}
         <Routes>
-          <Route path="/*" element={<OwnerDashboard />} />
+          <Route path="/*" element={<Dashboard />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
