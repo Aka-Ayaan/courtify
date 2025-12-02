@@ -241,6 +241,104 @@ app.get('/arenas', (req, res) => {
   });
 });
 
+// ===============================
+// GET Arena Full Details
+// ===============================
+app.get("/arena/:id", (req, res) => {
+  const arenaId = req.params.id;
+
+  const arenaQuery = `
+    SELECT 
+      id, owner_id, name, city, address, pricePerHour, availability, rating,
+      timing, amenities, description, rules
+    FROM arenas 
+    WHERE id = ?;
+  `;
+
+  const imagesQuery = `
+    SELECT image_path 
+    FROM courts 
+    WHERE arena_id = ?;
+  `;
+
+  const courtsQuery = `
+    SELECT distinct ct.type_name
+    FROM courts c
+    JOIN court_types ct ON c.court_type_id = ct.id
+    WHERE c.arena_id = ?;
+  `;
+
+  // 1) Fetch arena details
+  db.query(arenaQuery, [arenaId], (err, arenaResult) => {
+    if (err) return res.status(500).json({ error: "Database error (arena)" });
+
+    if (arenaResult.length === 0)
+      return res.status(404).json({ error: "Arena not found" });
+
+    let arena = arenaResult[0];
+
+    // Parse JSON safely
+    const safeJSON = (value) => {
+      if (!value) return [];
+
+      try {
+        // Case 1: Already an array (MySQL sometimes returns JSON parsed)
+        if (Array.isArray(value)) return value;
+
+        // Case 2: Value is a Buffer
+        if (Buffer.isBuffer(value)) {
+          return JSON.parse(value.toString());
+        }
+
+        // Case 3: Value is a string
+        if (typeof value === "string") {
+          return JSON.parse(value);
+        }
+
+        return [];
+      } catch (e) {
+        console.error("JSON parse error:", e);
+        return [];
+      }
+    };
+
+
+    arena.amenities = safeJSON(arena.amenities);
+    arena.rules = safeJSON(arena.rules);
+
+    // 2) Fetch main images
+    db.query(imagesQuery, [arenaId], (err, imgResult) => {
+      if (err) return res.status(500).json({ error: "Database error (images)" });
+
+      const images = imgResult.map(row => row.image_path);
+
+      // 3) Fetch courts and court images
+      db.query(courtsQuery, [arenaId], (err, courtsResult) => {
+        if (err) return res.status(500).json({ error: "Database error (courts)" });
+
+        const courts = courtsResult.map(c => c.type_name );
+
+        // FINAL RESPONSE
+        return res.json({
+          id: arena.id,
+          name: arena.name,
+          address: arena.address,
+          city: arena.city,
+          rating: arena.rating,
+          pricePerHour: arena.pricePerHour,
+          availability: arena.availability,
+          timing: arena.timing,
+          amenities: arena.amenities,
+          description: arena.description,
+          rules: arena.rules,
+          images: images,
+          courts: courts
+        });
+      });
+    });
+  });
+});
+
 
 
 const PORT = process.env.PORT || 5000;

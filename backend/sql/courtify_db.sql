@@ -71,15 +71,67 @@ CREATE TABLE IF NOT EXISTS arenas (
   pricePerHour INT DEFAULT NULL,
   availability ENUM('available', 'unavailable', 'closed') DEFAULT 'available',
   rating DECIMAL(3,2) DEFAULT 0.00,
+  timing VARCHAR(100),              -- NEW
+  amenities JSON,                   -- NEW: ["Showers","Lockers",...]
+  description TEXT,                 -- NEW
+  rules JSON,                       -- NEW: ["Wear proper kit", "No smoking", ...]
   FOREIGN KEY (owner_id) REFERENCES arena_owners(id)
 );
 
 /* Dummy Arenas */
-INSERT INTO arenas (owner_id, name, city, address, pricePerHour, availability, rating)
+INSERT INTO arenas (
+  owner_id, 
+  name, 
+  city, 
+  address, 
+  pricePerHour, 
+  availability, 
+  rating,
+  timing,
+  amenities,
+  description,
+  rules
+)
 VALUES
-(1, 'Clifton Padel Arena', 'Karachi', 'Clifton Block 5', 4500, 'available', 4.50),
-(2, 'Gulshan Smash Arena', 'Karachi', 'Gulshan Block 10', 3500, 'available', 4.20),
-(1, 'Defense Tennis Hub', 'Karachi', 'DHA Phase 6', 5000, 'closed', 4.00);
+(1,
+ 'Clifton Padel Arena',
+ 'Karachi',
+ 'Clifton Block 5',
+ 4500,
+ 'available',
+ 4.50,
+ '8 AM - 11 PM',
+ JSON_ARRAY('Changing Rooms', 'Showers', 'Parking', 'Equipment Rental'),
+ 'A premium padel facility located near Clifton Beach, known for its well-maintained courts and vibrant community events.',
+ JSON_ARRAY('Proper sports shoes required', 'Arrive 10 minutes early', 'Respect booking times')
+),
+
+(2,
+ 'Gulshan Smash Arena',
+ 'Karachi',
+ 'Gulshan Block 10',
+ 3500,
+ 'available',
+ 4.20,
+ '9 AM - 12 AM',
+ JSON_ARRAY('Locker Room', 'Café', 'WiFi', 'Rental Rackets'),
+ 'A popular neighborhood sports venue offering high-quality courts suitable for both beginners and experienced players.',
+ JSON_ARRAY('No smoking inside venue', 'Follow staff instructions', 'Bring your own water bottle')
+),
+
+(1,
+ 'Defense Tennis Hub',
+ 'Karachi',
+ 'DHA Phase 6',
+ 5000,
+ 'closed',
+ 4.00,
+ '7 AM - 10 PM',
+ JSON_ARRAY('Rest Area', 'Parking', 'Professional Coaches'),
+ 'A well-established tennis facility in DHA offering multiple courts and coaching for players of all ages.',
+ JSON_ARRAY('Coaching sessions must be pre-booked', 'Wear proper tennis attire', 'Do not litter on the courts')
+);
+
 
 
 /* ==========================================================
@@ -108,17 +160,18 @@ CREATE TABLE IF NOT EXISTS courts (
   arena_id INT NOT NULL,
   court_type_id INT NOT NULL,
   name VARCHAR(100),
+  image_path VARCHAR(255),     -- NEW COLUMN ADDED
   FOREIGN KEY (arena_id) REFERENCES arenas(id),
   FOREIGN KEY (court_type_id) REFERENCES court_types(id)
 );
 
 /* Dummy Courts */
-INSERT INTO courts (arena_id, court_type_id, name)
+INSERT INTO courts (arena_id, court_type_id, name, image_path)
 VALUES
-(1, 1, 'Padel Court A'),
-(1, 1, 'Padel Court B'),
-(2, 2, 'Tennis Court A'),
-(3, 3, 'Badminton Court A');
+(1, 1, 'Padel Court A', '/assets/courts/padel_a.jpg'),
+(1, 1, 'Padel Court B', '/assets/courts/padel_b.jpg'),
+(2, 2, 'Tennis Court A', '/assets/courts/tennis_a.jpg'),
+(3, 3, 'Badminton Court A', '/assets/courts/badminton_a.jpg');
 
 
 /* ==========================================================
