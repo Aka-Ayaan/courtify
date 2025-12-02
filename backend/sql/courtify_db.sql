@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS players (
 INSERT INTO players (email, password_hash, name, phone, is_active)
 VALUES
 ('player@example.com',
- '$2b$10$dXJrRUBX04h8xqv4LwyHcuWkqc4O9.6u1tpfF8F3lI6W6BV0xT1tW', /* 12345678 */
+ '$2b$10$533qJn3SLMwXHwsUs.WtQexDbAPZYcKw7isfsPwVInWwhSZkcC9l.', /* 12345678 */
  'Test Player',
  '03001234567',
  1
@@ -64,13 +64,13 @@ VALUES
 ('Marksman Admin',
  'marksman_admin@example.com',
  '03001112222',
- '$2b$10$dXJrRUBX04h8xqv4LwyHcuWkqc4O9.6u1tpfF8F3lI6W6BV0xT1tW',
+ '$2b$10$533qJn3SLMwXHwsUs.WtQexDbAPZYcKw7isfsPwVInWwhSZkcC9l.', /* 12345678 */
  1
 ),
 ('Titan Admin',
  'titan_admin@example.com',
  '03003334444',
- '$2b$10$dXJrRUBX04h8xqv4LwyHcuWkqc4O9.6u1tpfF8F3lI6W6BV0xT1tW',
+ '$2b$10$533qJn3SLMwXHwsUs.WtQexDbAPZYcKw7isfsPwVInWwhSZkcC9l.', /* 12345678 */
  1
 );
 
