@@ -85,9 +85,10 @@ function UserSignup({ close, showLogin }) {
           password,
           name: fullName,
           phone,
-          // userType
+          userType
         })
       });
+      
       const data = await response.json();
 
       if (response.ok) {
