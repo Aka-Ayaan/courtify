@@ -7,6 +7,7 @@ import { useAuth } from "../Authcontext.jsx";
 import UserLogin from "./user_login";
 import UserSignup from "./user_signup";
 import "../styles/dashboard.css";
+import Logo from '../assets/logo.png';
 
 import viteLogo from "../../public/vite.svg";
 
@@ -18,8 +19,30 @@ export default function Dashboard() {
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const [cityInput, setCityInput] = useState("");
+  const [filteredVenues, setFilteredVenues] = useState([]);
+
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  const handleSearchCity = () => {
+    // trim to avoid matching accidental whitespace
+    const q = cityInput.trim().toLowerCase();
+
+    if (q === "") {
+      // empty input -> show all venues
+      setFilteredVenues(venues);
+      return;
+    }
+
+    const filtered = venues.filter(v =>
+      // using location field; adjust if your API stores city separately
+      v.location?.toLowerCase().includes(q)
+    );
+
+    setFilteredVenues(filtered);
+  };
 
   const handleShowSignup = () => {
     setShowSignup(true);
@@ -59,6 +82,7 @@ export default function Dashboard() {
       }));
       
       setVenues(venue);
+      setFilteredVenues(venue);
     } catch (err) {
       console.error("Error fetching venues:", err);
       setError("Failed to load venues. Please try again later.");
@@ -118,13 +142,18 @@ export default function Dashboard() {
             <p>Search courts, grounds, and arenas in your city. Play anytime, anywhere.</p>
 
             <div className="hero-search">
-              <input type="text" placeholder="Search by city (Karachi, Lahore, Islamabad...)" />
-              <button className="btn">Search</button>
+              <input
+                type="text"
+                placeholder="Search by city (Karachi, Lahore, Islamabad...)"
+                value={cityInput}
+                onChange={(e) => setCityInput(e.target.value)}
+              />
+              <button className="btn" onClick={handleSearchCity}>Search</button>
             </div>
           </div>
 
           <div className="hero-right">
-            <img src={viteLogo} alt="Sports Banner" />
+            <img src={Logo} alt="Sports Banner" />
           </div>
         </section>
 
@@ -135,7 +164,7 @@ export default function Dashboard() {
         <h1 className="dashboard-title">Available Venues</h1>
 
         <div className="venue-grid">
-          {venues.map((venue) => (
+          {filteredVenues.map((venue) => (
             <VenueCard key={venue.id} {...venue} />
           ))}
         </div>
