@@ -29,66 +29,49 @@ export default function OwnerDash() {
       return;
     }
     
-    // Fetch owner data with dummy data
+    // Fetch owner data
     fetchOwnerData();
   }, [user, isOwner, navigate]);
 
-  useEffect(() => {
-    fetchOwnerData();
-  }, []);
-
   const fetchOwnerData = async () => {
     try {
-      // Dummy data for demonstration
-      const dummyFacilities = [
-        {
-          id: 1,
-          name: "Elite Sports Complex",
-          location: "Karachi, DHA",
-          sports: ["Badminton", "Tennis", "Squash"],
-          todayBookings: 8,
-          status: "active"
-        },
-        {
-          id: 2,
-          name: "City Sports Arena",
-          location: "Lahore, Gulberg",
-          sports: ["Football", "Cricket"],
-          todayBookings: 12,
-          status: "active"
-        },
-        {
-          id: 3,
-          name: "Champion Court",
-          location: "Islamabad, F-8",
-          sports: ["Basketball", "Volleyball"],
-          todayBookings: 5,
-          status: "pending"
-        }
-      ];
+      if (!user?.userId) return;
 
-      const dummyStats = {
-        totalFacilities: 3,
-        todayBookings: 25,
-        monthlyRevenue: 125000,
-        pendingApprovals: 1
-      };
+      // Fetch Facilities
+      const facilitiesRes = await fetch(`http://localhost:5000/owner/arenas?ownerId=${user.userId}`);
+      const facilitiesData = await facilitiesRes.json();
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setFacilities(dummyFacilities);
-      setStats(dummyStats);
+      // Fetch Bookings
+      const bookingsRes = await fetch(`http://localhost:5000/owner/bookings?ownerId=${user.userId}`);
+      const bookingsData = await bookingsRes.json();
+
+      if (facilitiesRes.ok && bookingsRes.ok) {
+        setFacilities(facilitiesData);
+
+        // Calculate Stats
+        const totalFacilities = facilitiesData.length;
+        
+        // Filter today's bookings
+        const today = new Date().toISOString().split('T')[0];
+        const todayBookings = bookingsData.filter(b => b.bookingDate && b.bookingDate.startsWith(today)).length;
+
+        // Calculate monthly revenue
+        const currentMonth = new Date().getMonth();
+        const monthlyRevenue = bookingsData
+          .filter(b => b.bookingDate && new Date(b.bookingDate).getMonth() === currentMonth)
+          .reduce((sum, b) => sum + (b.revenue || 0), 0);
+
+        const pendingApprovals = bookingsData.filter(b => b.status === 'pending').length;
+
+        setStats({
+          totalFacilities,
+          todayBookings,
+          monthlyRevenue,
+          pendingApprovals
+        });
+      }
     } catch (error) {
       console.error("Error fetching owner data:", error);
-      // Fallback dummy data in case of error
-      setFacilities([]);
-      setStats({
-        totalFacilities: 0,
-        todayBookings: 0,
-        monthlyRevenue: 0,
-        pendingApprovals: 0
-      });
     }
   };
 
@@ -212,23 +195,24 @@ export default function OwnerDash() {
           ) : (
             <div className="facilities-grid">
               {facilities.map(facility => (
-                <div key={facility.id} className={`facility-card ${facility.status}`}>
+                <div key={facility.id} className={`facility-card ${facility.availability}`}>
                   <div className="facility-header">
                     <h4>{facility.name}</h4>
-                    <span className={`status-badge ${facility.status}`}>
-                      {facility.status}
+                    <span className={`status-badge ${facility.availability}`}>
+                      {facility.availability}
                     </span>
                   </div>
-                  <p className="facility-location">{facility.location}</p>
+                  <p className="facility-location">{facility.city}</p>
                   <div className="sports-tags">
-                    {facility.sports.map(sport => (
-                      <span key={sport} className="sport-tag">{sport}</span>
+                    {/* Assuming amenities or court types can be shown here, or just static for now */}
+                    {Array.isArray(facility.amenities) && facility.amenities.slice(0, 3).map((amenity, i) => (
+                      <span key={i} className="sport-tag">{amenity}</span>
                     ))}
                   </div>
                   <div className="facility-stats">
                     <div className="stat">
-                      <span className="stat-value">{facility.todayBookings}</span>
-                      <span className="stat-label">Today's Bookings</span>
+                      <span className="stat-value">PKR {facility.pricePerHour}</span>
+                      <span className="stat-label">Per Hour</span>
                     </div>
                   </div>
                   <div className="facility-actions">

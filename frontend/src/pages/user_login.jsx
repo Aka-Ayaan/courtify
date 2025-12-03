@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Authcontext.jsx";
 import "../styles/userLogin.css";
 
 function UserLogin({ close,showSignup }) {
+  const navigate = useNavigate();
 
   const { login: setUser } = useAuth();
   const [email, setEmail] = useState("");
@@ -30,8 +32,8 @@ function UserLogin({ close,showSignup }) {
         setUser(data);
         close();
 
-        if (data.userType == "owner") {
-          // redirect or show owner options on navbar
+        if (data.userType === "owner") {
+          navigate('/owner/dashboard');
         }
 
       } else {

@@ -414,3 +414,132 @@ app.get("/bookings/:userId", (req, res) => {
     });
   });
 });
+
+// ===============================
+// OWNER: Create New Arena
+// ===============================
+app.post('/arenas', (req, res) => {
+  const { 
+    owner_id, name, city, address, pricePerHour, 
+    timing, amenities, description, rules 
+  } = req.body;
+
+  if (!owner_id || !name || !city || !pricePerHour) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  const query = `
+    INSERT INTO arenas 
+    (owner_id, name, city, address, pricePerHour, availability, rating, timing, amenities, description, rules)
+    VALUES (?, ?, ?, ?, ?, 'available', 0, ?, ?, ?, ?)
+  `;
+
+  // Convert arrays to JSON strings if they aren't already
+  const amenitiesJson = JSON.stringify(amenities || []);
+  const rulesJson = JSON.stringify(rules || []);
+
+  db.query(
+    query, 
+    [owner_id, name, city, address, pricePerHour, timing, amenitiesJson, description, rulesJson], 
+    (err, result) => {
+      if (err) {
+        console.error("Error creating arena:", err);
+        return res.status(500).json({ error: "Database error" });
+      }
+      return res.status(201).json({ message: "Arena created successfully", id: result.insertId });
+    }
+  );
+});
+
+// ===============================
+// OWNER: Get My Arenas
+// ===============================
+app.get('/owner/arenas', (req, res) => {
+  const { ownerId } = req.query;
+
+  if (!ownerId) return res.status(400).json({ error: "Owner ID required" });
+
+  const query = `
+    SELECT * FROM arenas WHERE owner_id = ? ORDER BY id DESC
+  `;
+
+  db.query(query, [ownerId], (err, results) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    
+    // Parse JSON fields
+    const arenas = results.map(arena => ({
+      ...arena,
+      amenities: typeof arena.amenities === 'string' ? JSON.parse(arena.amenities) : arena.amenities,
+      rules: typeof arena.rules === 'string' ? JSON.parse(arena.rules) : arena.rules
+    }));
+
+    return res.json(arenas);
+  });
+});
+
+// ===============================
+// OWNER: Get My Bookings
+// ===============================
+app.get('/owner/bookings', (req, res) => {
+  const { ownerId } = req.query;
+
+  if (!ownerId) return res.status(400).json({ error: "Owner ID required" });
+
+  const query = `
+    SELECT 
+      b.id AS bookingId,
+      a.name AS arenaName,
+      c.name AS courtName,
+      p.name AS playerName,
+      p.phone AS playerPhone,
+      DATE(b.booking_date) AS bookingDate,
+      b.start_time AS startTime,
+      b.end_time AS endTime,
+      bs.status_name AS status,
+      (TIME_TO_SEC(TIMEDIFF(b.end_time, b.start_time)) / 3600) * a.pricePerHour AS revenue
+    FROM bookings b
+    JOIN courts c ON b.court_id = c.id
+    JOIN arenas a ON c.arena_id = a.id
+    JOIN players p ON b.player_id = p.id
+    JOIN booking_status bs ON b.status_id = bs.id
+    WHERE a.owner_id = ?
+    ORDER BY b.booking_date DESC, b.start_time DESC
+  `;
+
+  db.query(query, [ownerId], (err, results) => {
+    if (err) {
+      console.error("Error fetching owner bookings:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    return res.json(results);
+  });
+});
+
+// ===============================
+// OWNER: Update Arena
+// ===============================
+app.put('/arenas/:id', (req, res) => {
+  const arenaId = req.params.id;
+  const { 
+    name, city, address, pricePerHour, 
+    timing, amenities, description, rules, availability 
+  } = req.body;
+
+  const query = `
+    UPDATE arenas 
+    SET name=?, city=?, address=?, pricePerHour=?, timing=?, amenities=?, description=?, rules=?, availability=?
+    WHERE id=?
+  `;
+
+  const amenitiesJson = JSON.stringify(amenities || []);
+  const rulesJson = JSON.stringify(rules || []);
+
+  db.query(
+    query, 
+    [name, city, address, pricePerHour, timing, amenitiesJson, description, rulesJson, availability, arenaId],
+    (err, result) => {
+      if (err) return res.status(500).json({ error: "Database error" });
+      return res.json({ message: "Arena updated successfully" });
+    }
+  );
+});
