@@ -13,26 +13,13 @@ function BookingPage() {
   const [showLogin, setShowLogin] = useState(false);
   
   // Get venue data from navigation state or use default
-  const venue = location.state?.venue || {
-    id: 1,
-    name: "Nisha Millets Swimming Academy @ Basecamp BCU",
-    timing: "8 AM - 8 PM",
-    courts: {
-      "Swimming": ["Olympic Pool", "Training Pool", "Kids Pool"],
-      "Aqua Aerobics": ["Main Pool"],
-      "Diving": ["Diving Pool"]
-    },
-    sports: ["Swimming", "Aqua Aerobics", "Diving"],
-    price: 250,
-    description: "Premium swimming academy with professional trainers and well-maintained pool facilities."
-  };
+  const venue = location.state.venue
 
   // State for form fields
   const [selectedSport, setSelectedSport] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedSlot, setSelectedSlot] = useState("");
   const [selectedCourt, setSelectedCourt] = useState("");
-  const [duration, setDuration] = useState("1 hr");
   const [quantity, setQuantity] = useState(1);
 
   // Generate time slots from venue timing
@@ -40,13 +27,17 @@ function BookingPage() {
     const slots = [];
     const [startTime, endTime] = venue.timing.split(" - ");
     
-    // Convert to 24-hour format for easier calculation
-    const startHour = convertTo24Hour(startTime);
-    const endHour = convertTo24Hour(endTime);
+    let startHour = convertTo24Hour(startTime);
+    let endHour = convertTo24Hour(endTime);
+    
+    if (endHour <= startHour) {
+      endHour += 24;
+    }
     
     for (let hour = startHour; hour < endHour; hour++) {
-      const start = convertTo12Hour(hour);
-      const end = convertTo12Hour(hour + 1);
+      const actualHour = hour % 24;
+      const start = convertTo12Hour(actualHour);
+      const end = convertTo12Hour((actualHour + 1) % 24);
       slots.push(`${start} - ${end}`);
     }
     
@@ -56,15 +47,16 @@ function BookingPage() {
   const convertTo24Hour = (time12h) => {
     const [time, modifier] = time12h.split(" ");
     let [hours] = time.split(":");
+    hours = parseInt(hours, 10);
     
-    if (modifier === "PM" && hours !== "12") {
-      hours = parseInt(hours, 10) + 12;
+    if (modifier === "PM" && hours !== 12) {
+      hours = hours + 12;
     }
-    if (modifier === "AM" && hours === "12") {
+    if (modifier === "AM" && hours === 12) {
       hours = 0;
     }
     
-    return parseInt(hours, 10);
+    return hours;
   };
 
   const convertTo12Hour = (hour24) => {
@@ -79,8 +71,7 @@ function BookingPage() {
   const availableCourts = selectedSport ? venue.courts[selectedSport] || [] : [];
 
   // Calculate total price
-  const hours = parseInt(duration.split(" ")[0]);
-  const totalPrice = venue.price * hours;
+  const totalPrice = venue.price
 
   // Set minimum date to today
   const today = new Date().toISOString().split('T')[0];
@@ -208,20 +199,6 @@ function BookingPage() {
                 )}
               </div>
 
-              {/* Duration */}
-              <div className="form-group">
-                <label htmlFor="duration">Duration</label>
-                <select
-                  id="duration"
-                  value={duration}
-                  onChange={(e) => setDuration(e.target.value)}
-                >
-                  <option value="1 hr">1 hour</option>
-                  <option value="2 hrs">2 hours</option>
-                  <option value="3 hrs">3 hours</option>
-                </select>
-              </div>
-
               {/* Quantity */}
               <div className="form-group">
                 <label htmlFor="quantity">Number of People</label>
@@ -267,11 +244,6 @@ function BookingPage() {
               <div className="summary-item">
                 <span>Court:</span>
                 <span>{selectedCourt || "Not selected"}</span>
-              </div>
-
-              <div className="summary-item">
-                <span>Duration:</span>
-                <span>{duration}</span>
               </div>
 
               <div className="summary-item">

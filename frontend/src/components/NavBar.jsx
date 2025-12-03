@@ -1,16 +1,32 @@
 import { useNavigate } from "react-router-dom";
-import React from "react";
+import React , { useState } from "react";
 import "./navbar.css";
 import { useAuth } from "../Authcontext";
 
 import logo from "../logo.png";
 
+const LogoutIcon = () => (
+  <svg 
+    width="16" 
+    height="16" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+  >
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" y1="12" x2="9" y2="12" />
+  </svg>
+);
+
 export const Navbar = ({ onLoginClick, user }) => {
 
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
-  const { isPlayer } = useAuth();
-  console.log("Navbar user:", user);
-  console.log("Is player:", isPlayer());
+  const { isPlayer, logout } = useAuth();
 
   const handleBookingsClick = () => {
     if (!user) {
@@ -21,6 +37,19 @@ export const Navbar = ({ onLoginClick, user }) => {
     } else {
       navigate("/playerBook");
     }
+  };
+
+  const handleLogout = (e) => {
+    e.stopPropagation();
+    logout();
+    setDropdownOpen(false);
+    navigate("/");
+  };
+
+  const toggleDropdown = (e) => {
+    e.stopPropagation();
+    console.log("Toggling dropdown:", !dropdownOpen); // Add this
+    setDropdownOpen(!dropdownOpen);
   };
 
   return (
@@ -40,9 +69,17 @@ export const Navbar = ({ onLoginClick, user }) => {
         <li onClick={() => navigate("/about")}>About</li>
         <div className="separator">|</div>
         {user ? (
-          <li className="user-info btn">
+          <li className="user-info" onClick={toggleDropdown}>
             <span className="user-icon">👤</span>
             <span className="user-name">{user.name}</span>
+            {dropdownOpen && (
+              <div className="dropdown-menu" onClick={(e) => e.stopPropagation()}>
+                <button onClick={handleLogout}>
+                  <LogoutIcon />
+                  Logout
+                </button>
+              </div>
+            )}
           </li>
         ) : (
           <button className="btn login-btn" onClick={onLoginClick}>
