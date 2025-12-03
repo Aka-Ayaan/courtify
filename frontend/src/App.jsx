@@ -45,9 +45,6 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <AppRoutes />
-        {/* <Routes>
-          <Route path="/*" element={<PlayerBookings />} />
-        </Routes> */}
       </BrowserRouter>
     </AuthProvider>
   );
