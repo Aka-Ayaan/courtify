@@ -2,8 +2,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../Authcontext.jsx";
 import { useNavigate } from "react-router-dom";
+import { Navbar } from "../components/NavBar";
 import "../styles/ownerDash.css";
 import "../styles/global.css";
+import "../styles/dashboard.css"; 
+import Logo from '../assets/logo.png';
 
 export default function OwnerDash() {
   const { user, isOwner } = useAuth();
@@ -59,7 +62,7 @@ export default function OwnerDash() {
         const currentMonth = new Date().getMonth();
         const monthlyRevenue = bookingsData
           .filter(b => b.bookingDate && new Date(b.bookingDate).getMonth() === currentMonth)
-          .reduce((sum, b) => sum + (b.revenue || 0), 0);
+          .reduce((sum, b) => sum + parseFloat(b.revenue || 0), 0);
 
         const pendingApprovals = bookingsData.filter(b => b.status === 'pending').length;
 
@@ -85,29 +88,23 @@ export default function OwnerDash() {
   };
 
   return (
-    <div className="owner-dashboard">
-      {/* Owner-specific Navbar */}
-      <nav className="owner-navbar">
-        <div className="nav-brand">
-          <span className="logo" onClick={() => navigate('/')}>Courtify</span>
-          <span className="user-badge">Owner Portal</span>
-        </div>
-        
-        <div className="nav-links">
-          <button className="btn-primary btn" onClick={() => navigate('/owner/register-facility')}>
-            + Add Facility
-          </button>
-          <span className="welcome-text">Welcome, {user?.name}</span>
-          <button className="btn-outline btn" onClick={() => navigate('/')}>
-            Back to Main Site
-          </button>
-        </div>
-      </nav>
+    <div className="dashboard-wrapper">
+      <Navbar user={user} />
 
-      <div className="owner-dashboard-content">
+      <section className="hero-section">
+        <div className="hero-left">
+          <h1>Manage Your Sports Facility</h1>
+          <p>Track bookings, manage arenas, and grow your business with Courtify.</p>
+        </div>
+        <div className="hero-right">
+          <img src={Logo} alt="Sports Banner" />
+        </div>
+      </section>
+
+      <div className="owner-dashboard-content" style={{ padding: '2rem 5%' }}>
         <div className="dashboard-header">
           <h1>Business Dashboard</h1>
-          <p>Manage your sports facilities and bookings</p>
+          <p>Overview of your performance</p>
         </div>
 
         {/* Stats Overview */}
@@ -142,7 +139,7 @@ export default function OwnerDash() {
         </div>
 
         {/* Quick Actions */}
-        <div className="quick-actions">
+        <div className="quick-actions" style={{ marginTop: '2rem' }}>
           <h2>Quick Actions</h2>
           <div className="action-buttons">
             <button 
@@ -169,7 +166,7 @@ export default function OwnerDash() {
         </div>
 
         {/* Recent Facilities */}
-        <div className="recent-facilities" ref={facilitiesSectionRef}>
+        <div className="recent-facilities" ref={facilitiesSectionRef} style={{ marginTop: '3rem' }}>
           <div className="section-header">
             <h2>Your Facilities</h2>
             <button 
@@ -204,7 +201,6 @@ export default function OwnerDash() {
                   </div>
                   <p className="facility-location">{facility.city}</p>
                   <div className="sports-tags">
-                    {/* Assuming amenities or court types can be shown here, or just static for now */}
                     {Array.isArray(facility.amenities) && facility.amenities.slice(0, 3).map((amenity, i) => (
                       <span key={i} className="sport-tag">{amenity}</span>
                     ))}

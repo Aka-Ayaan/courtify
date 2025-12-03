@@ -26,12 +26,14 @@ export const Navbar = ({ onLoginClick, user }) => {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
-  const { isPlayer, logout } = useAuth();
+  const { isPlayer, isOwner, logout } = useAuth();
 
   const handleBookingsClick = () => {
     if (!user) {
       // If user is not logged in, show login modal
       onLoginClick();
+    } else if (isOwner()) {
+      navigate("/owner/dashboard");
     } else if (!isPlayer()) {
       alert("Only players can access bookings page");
     } else {
@@ -48,7 +50,6 @@ export const Navbar = ({ onLoginClick, user }) => {
 
   const toggleDropdown = (e) => {
     e.stopPropagation();
-    console.log("Toggling dropdown:", !dropdownOpen); // Add this
     setDropdownOpen(!dropdownOpen);
   };
 
@@ -64,8 +65,15 @@ export const Navbar = ({ onLoginClick, user }) => {
 
       {/* Right section */}
       <ul className="nav-right">
-        <li onClick={() => navigate("/")}>Home</li>
-        <li onClick={handleBookingsClick}>Bookings</li>
+        <li onClick={() => navigate(isOwner() ? "/owner/dashboard" : "/")}>Home</li>
+        {isOwner() ? (
+          <>
+             <li onClick={() => navigate("/owner/facilities")}>My Facilities</li>
+             <li onClick={() => navigate("/owner/register-facility")}>Add Facility</li>
+          </>
+        ) : (
+          <li onClick={handleBookingsClick}>Bookings</li>
+        )}
         <li onClick={() => navigate("/about")}>About</li>
         <div className="separator">|</div>
         {user ? (
