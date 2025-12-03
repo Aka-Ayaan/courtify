@@ -9,8 +9,6 @@ import UserSignup from "./user_signup";
 import "../styles/dashboard.css";
 import Logo from '../assets/logo.png';
 
-import viteLogo from "../../public/vite.svg";
-
 
 export default function Dashboard() {
 
@@ -25,6 +23,48 @@ export default function Dashboard() {
 
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  const handleSearchVenue = (searchTerm) => {
+    const q = searchTerm.trim().toLowerCase();
+    
+    if (q === "") {
+      setFilteredVenues(venues);
+      return;
+    }
+    
+    const filtered = venues.filter(v =>
+      v.name?.toLowerCase().includes(q) ||
+      v.location?.toLowerCase().includes(q)
+    );
+
+    setFilteredVenues(filtered);
+  };
+
+  const handleFilterChange = (sortType) => {
+    let sorted = [...filteredVenues];
+    
+    switch(sortType) {
+      case 'name-asc':
+        sorted.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'name-desc':
+        sorted.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case 'price-asc':
+        sorted.sort((a, b) => a.pricePerHour - b.pricePerHour);
+        break;
+      case 'price-desc':
+        sorted.sort((a, b) => b.pricePerHour - a.pricePerHour);
+        break;
+      case 'rating-desc':
+        sorted.sort((a, b) => b.rating - a.rating);
+        break;
+      default:
+        sorted = [...venues];
+    }
+
+    setFilteredVenues(sorted);
+  };
 
   const handleSearchCity = () => {
     // trim to avoid matching accidental whitespace
@@ -158,7 +198,10 @@ export default function Dashboard() {
         </section>
 
         <div className="dashboard-header">
-          <SearchBar />
+          <SearchBar 
+            onSearch={handleSearchVenue}
+            onFilterChange={handleFilterChange}
+          />
         </div>
 
         <h1 className="dashboard-title">Available Venues</h1>
