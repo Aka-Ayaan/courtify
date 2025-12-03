@@ -272,7 +272,8 @@ app.get("/arena/:id", (req, res) => {
   const courtsQuery = `
     SELECT 
       ct.type_name AS type,
-      c.name AS court_name
+      c.name AS court_name,
+      c.id AS court_id
     FROM courts c
     JOIN court_types ct 
       ON c.court_type_id = ct.id
@@ -334,7 +335,7 @@ app.get("/arena/:id", (req, res) => {
           if (!groupedCourts[row.type]) {
             groupedCourts[row.type] = [];
           }
-          groupedCourts[row.type].push(row.court_name);
+          groupedCourts[row.type].push({ id: row.court_id, name: row.court_name });
         });
 
         // FINAL RESPONSE
@@ -359,6 +360,30 @@ app.get("/arena/:id", (req, res) => {
 });
 
 // ===============================
+// POST Create Booking
+app.post('/bookings', (req, res) => {
+  const { userId, courtId, date, startTime, endTime, status } = req.body;
+
+  if (!userId || !courtId || !date || !startTime || !endTime) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  const statusId = status === 'confirmed' ? 2 : 1; 
+
+  const query = `
+    INSERT INTO bookings (player_id, court_id, booking_date, start_time, end_time, status_id)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+
+  db.query(query, [userId, courtId, date, startTime, endTime, statusId], (err, result) => {
+    if (err) {
+      console.error("Error creating booking:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    res.json({ message: "Booking created successfully", bookingId: result.insertId });
+  });
+});
+
 // GET User Bookings (Callback version)
 // ===============================
 app.get("/bookings/:userId", (req, res) => {

@@ -76,7 +76,7 @@ function BookingPage() {
   // Set minimum date to today
   const today = new Date().toISOString().split('T')[0];
 
-  const handleProceedToPayment = () => {
+  const handleProceedToPayment = async () => {
     if (!user) {
       setShowLogin(true);
       return;
@@ -87,17 +87,47 @@ function BookingPage() {
       return;
     }
 
-    // Proceed to payment
-    console.log("Booking details:", {
-      sport: selectedSport,
-      date: selectedDate,
-      slot: selectedSlot,
-      court: selectedCourt,
-      totalPrice
-    });
+    const [startStr, endStr] = selectedSlot.split(" - ");
+    
+    const formatTime = (time12h) => {
+        const [time, modifier] = time12h.split(" ");
+        let [hours, minutes] = time.split(":");
+        let h = parseInt(hours);
+        if (modifier === "PM" && h !== 12) h += 12;
+        if (modifier === "AM" && h === 12) h = 0;
+        return `${h.toString().padStart(2, '0')}:${minutes}:00`;
+    };
 
-    // Navigate to payment page
-    // navigate("/payment", { state: { bookingDetails: {...} } });
+    const startTime = formatTime(startStr);
+    const endTime = formatTime(endStr);
+
+    const bookingData = {
+      userId: user.userId,
+      courtId: selectedCourt,
+      date: selectedDate,
+      startTime: startTime,
+      endTime: endTime,
+      status: 'confirmed'
+    };
+
+    try {
+      const response = await fetch('http://localhost:5000/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingData),
+      });
+
+      if (response.ok) {
+        alert("Booking added successfully!");
+      } else {
+        alert("Failed to create booking.");
+      }
+    } catch (error) {
+      console.error("Error booking:", error);
+      alert("Error creating booking.");
+    }
   };
 
   // Reset court when sport changes
@@ -189,7 +219,7 @@ function BookingPage() {
                 >
                   <option value="">Choose a court</option>
                   {availableCourts.map((court, index) => (
-                    <option key={index} value={court}>{court}</option>
+                    <option key={index} value={court.id}>{court.name}</option>
                   ))}
                 </select>
                 {!selectedSport && (
@@ -241,7 +271,7 @@ function BookingPage() {
 
               <div className="summary-item">
                 <span>Court:</span>
-                <span>{selectedCourt || "Not selected"}</span>
+                <span>{availableCourts.find(c => c.id == selectedCourt)?.name || "Not selected"}</span>
               </div>
 
               <div className="summary-item">
