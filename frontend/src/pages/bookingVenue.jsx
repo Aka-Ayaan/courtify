@@ -93,8 +93,6 @@ function BookingPage() {
       date: selectedDate,
       slot: selectedSlot,
       court: selectedCourt,
-      duration,
-      quantity,
       totalPrice
     });
 
