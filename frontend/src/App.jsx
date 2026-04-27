@@ -8,7 +8,8 @@ import VenueDetail from './pages/venue_page.jsx';
 import BookingPage from './pages/bookingVenue.jsx';
 import PlayerBookings from './pages/playerBookings.jsx';
 import AboutPage from './pages/about.jsx';
-
+import ForgotPassword from './pages/forgot_password.jsx';
+import ResetPassword from './pages/reset_password.jsx';
 function AppRoutes () {
   const { user, isOwner } = useAuth();
 
@@ -20,6 +21,8 @@ function AppRoutes () {
       <Route path="/booking" element={<BookingPage />} />
       <Route path="/playerBook" element={<PlayerBookings />} />
       <Route path="/about" element={<AboutPage />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
 
       {/* Owner protected routes */}

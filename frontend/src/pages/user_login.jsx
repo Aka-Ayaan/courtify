@@ -107,7 +107,7 @@ function UserLogin({ close,showSignup }) {
               Remember me
             </label>
 
-            <span className="forgot">Forgot password?</span>
+            <span className="forgot" style={{cursor: "pointer"}} onClick={() => { close(); navigate('/forgot-password'); }}>Forgot password?</span>
           </div>
 
           {error && <p className="error">{error}</p>}

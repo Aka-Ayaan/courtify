@@ -114,11 +114,11 @@ app.post('/auth/signup', async (req, res) => {
         return res.status(409).json({ error: "Email already registered" });
 
       const passwordHash = await bcrypt.hash(password, 10);
-      const token = crypto.randomBytes(32).toString("hex");
+      const token = String(crypto.randomInt(100000, 999999)); // 6-digit OTP
 
       const insert = `
-        INSERT INTO players (email, password_hash, name, phone, is_active, verification_token)
-        VALUES (?, ?, ?, ?, 0, ?)
+        INSERT INTO players (email, password_hash, name, phone, is_active, verification_token, verification_token_expiry)
+        VALUES (?, ?, ?, ?, 0, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
       `;
 
       db.query(insert, [email, passwordHash, name, phone, token], async (err, _) => {
@@ -127,7 +127,7 @@ app.post('/auth/signup', async (req, res) => {
         await sendVerificationEmail(email, token);
 
         return res.status(201).json({
-          message: "Account created. Check your email to verify."
+          message: "Account created. Check your email for the 6-digit OTP to verify."
         });
       });
     });
@@ -137,11 +137,11 @@ app.post('/auth/signup', async (req, res) => {
         return res.status(409).json({ error: "Email already registered" });
 
       const passwordHash = await bcrypt.hash(password, 10);
-      const token = crypto.randomBytes(32).toString("hex");
+      const token = String(crypto.randomInt(100000, 999999)); // 6-digit OTP
 
       const insert = `
-        INSERT INTO arena_owners (name, email, phone, password_hash,  is_active, verification_token)
-        VALUES (?, ?, ?, ?, 0, ?)
+        INSERT INTO arena_owners (name, email, phone, password_hash,  is_active, verification_token, verification_token_expiry)
+        VALUES (?, ?, ?, ?, 0, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
       `;
 
       db.query(insert, [name, email, phone, passwordHash, token], async (err, _) => {
@@ -150,7 +150,7 @@ app.post('/auth/signup', async (req, res) => {
         await sendVerificationEmail(email, token);
 
         return res.status(201).json({
-          message: "Account created. Check your email to verify."
+          message: "Account created. Check your email for the 6-digit OTP to verify."
         });
       });
     });
@@ -261,19 +261,56 @@ app.post('/auth/verify-otp', (req, res) => {
     }
 
     const user = results[0];
-    
-    if (String(user.verification_token) !== String(otp)) {
+
+    // Check expiry if present
+    if (user.verification_token_expiry && new Date(user.verification_token_expiry) < new Date()) {
+      return res.status(400).json({ error: "OTP expired" });
+    }
+
+    if (!user.verification_token || String(user.verification_token) !== String(otp)) {
       return res.status(400).json({ error: "Invalid OTP" });
     }
 
     // OTP matched, activate user
-    db.query(`UPDATE ${tableName} SET is_active = 1, verification_token = NULL WHERE email = ?`, [email], (updateErr) => {
+    db.query(`UPDATE ${tableName} SET is_active = 1, verification_token = NULL, verification_token_expiry = NULL WHERE email = ?`, [email], (updateErr) => {
       if (updateErr) {
         console.error('Database error activating user:', updateErr);
         return res.status(500).json({ error: "Could not activate user" });
       }
 
       return res.status(200).json({ message: "Verification successful!" });
+    });
+  });
+});
+
+// ------------------------
+// RESEND OTP
+// ------------------------
+app.post('/auth/resend-otp', (req, res) => {
+  const { email, userType } = req.body;
+  if (!email || !userType) return res.status(400).json({ error: "Email and user type required" });
+
+  const tableName = userType === 'player' ? 'players' : 'arena_owners';
+
+  db.query(`SELECT id, is_active FROM ${tableName} WHERE email = ?`, [email], async (err, results) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    if (results.length === 0) return res.status(404).json({ error: "User not found" });
+
+    const user = results[0];
+    if (user.is_active === 1) return res.status(400).json({ error: "Account already verified" });
+
+    const otp = String(crypto.randomInt(100000, 999999));
+
+    db.query(`UPDATE ${tableName} SET verification_token = ?, verification_token_expiry = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE email = ?`, [otp, email], async (updateErr) => {
+      if (updateErr) return res.status(500).json({ error: "Database error" });
+
+      try {
+        await sendVerificationEmail(email, otp);
+        return res.json({ message: "OTP resent to email" });
+      } catch (sendErr) {
+        console.error('Error sending OTP:', sendErr);
+        return res.status(500).json({ error: "Error sending OTP" });
+      }
     });
   });
 });

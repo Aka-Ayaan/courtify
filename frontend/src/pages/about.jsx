@@ -23,9 +23,9 @@ function About() {
 
   const teamMembers = [
     {
-      name: "Ayaan Merchant",
-      role: "Frontend Developer",
-      image: "👩‍💻",
+      name: "Wasiq Shaikh",
+      role: "Team Member",
+      image: "👨‍💻",
       socials: {
         github: "https://github.com",
         linkedin: "https://linkedin.com",
@@ -33,8 +33,28 @@ function About() {
       }
     },
     {
-      name: "Wasiq Shaikh",
-      role: "Backend Developer",
+      name: "Yusuf",
+      role: "Team Member",
+      image: "👨‍💻",
+      socials: {
+        github: "https://github.com",
+        linkedin: "https://linkedin.com",
+        twitter: "https://twitter.com"
+      }
+    },
+    {
+      name: "Shaheer",
+      role: "Team Member",
+      image: "👨‍💻",
+      socials: {
+        github: "https://github.com",
+        linkedin: "https://linkedin.com",
+        twitter: "https://twitter.com"
+      }
+    },
+    {
+      name: "Zarrar ul arfeen",
+      role: "Team Member",
       image: "👨‍💻",
       socials: {
         github: "https://github.com",
