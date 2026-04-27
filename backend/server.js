@@ -5,6 +5,7 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import db from './config/db.js';
 import sendVerificationEmail from './utils/sendMail.js';
+import sendResetMail from './utils/sendResetMail.js';
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -159,55 +160,120 @@ app.post('/auth/signup', async (req, res) => {
 });
 
 // ------------------------
-// VERIFY EMAIL FOR BOTH USERS
+// FORGOT PASSWORD
 // ------------------------
-app.get('/auth/verify', (req, res) => {
-  const { token } = req.query;
+app.post('/auth/forgot-password', async (req, res) => {
+  const { email, userType } = req.body;
+  if (!email || !userType) return res.status(400).json({ error: "Email and user type required" });
 
+  const tableName = userType === 'player' ? 'players' : 'arena_owners';
+  db.query(`SELECT id FROM ${tableName} WHERE email = ?`, [email], async (err, results) => {
+    if (err) return res.status(500).json({ error: "Database error" });
+    if (results.length === 0) return res.status(404).json({ error: "User not found" });
+
+    const token = crypto.randomBytes(32).toString("hex");
+
+    db.query(`UPDATE ${tableName} SET reset_token = ?, reset_token_expiry = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE email = ?`, 
+      [token, email], async (err) => {
+      if (err) return res.status(500).json({ error: "Database error" });
+
+      try {
+        await sendResetMail(email, token);
+        return res.json({ message: "Reset link sent to your email." });
+      } catch (err) {
+        console.error("Error sending email:", err);
+        return res.status(500).json({ error: "Error sending reset email." });
+      }
+    });
+  });
+});
+
+// ------------------------
+// RESET PASSWORD
+// ------------------------
+app.post('/auth/reset-password', async (req, res) => {
+  console.log("[RESET PASSWORD] received body:", req.body);
+  const { token, newPassword } = req.body;
   if (!token) {
-    return res.status(400).send('Invalid verification link');
+    console.error("[RESET PASSWORD] Token is missing from request");
+    return res.status(400).json({ error: "Token is required. Please make sure you used the correct link." });
+  }
+  if (!newPassword) {
+    console.error("[RESET PASSWORD] New password is missing from request");
+    return res.status(400).json({ error: "New password is required." });
   }
 
-  // Query 1: Check in players
-  const verifyPlayer = `
-    UPDATE players 
-    SET is_active = 1, verification_token = NULL 
-    WHERE verification_token = ?
-  `;
+  const checkToken = async (tableName) => {
+    return new Promise((resolve, reject) => {
+      // Use SQL functions for checking expiry: reset_token_expiry > NOW()
+      db.query(`SELECT id, email FROM ${tableName} WHERE reset_token = ? AND reset_token_expiry > NOW()`, [token], (err, results) => {
+        if (err) reject(err);
+        else resolve(results);
+      });
+    });
+  };
 
-  // Query 2: Check in arena_owners
-  const verifyOwner = `
-    UPDATE arena_owners 
-    SET is_active = 1, verification_token = NULL 
-    WHERE verification_token = ?
-  `;
+  try {
+    let results = await checkToken('players');
+    let tableName = 'players';
 
-  // Try verifying as a player first
-  db.query(verifyPlayer, [token], (err, playerResult) => {
+    if (results.length === 0) {
+      results = await checkToken('arena_owners');
+      tableName = 'arena_owners';
+    }
+
+    if (results.length === 0) return res.status(400).json({ error: "Invalid or expired token" });
+
+    const user = results[0];
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    db.query(`UPDATE ${tableName} SET password_hash = ?, reset_token = NULL, reset_token_expiry = NULL WHERE id = ?`, 
+      [passwordHash, user.id], (err) => {
+        if (err) return res.status(500).json({ error: "Database error" });
+        return res.json({ message: "Password reset successful" });
+      });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Database error" });
+  }
+});
+
+// ------------------------
+// VERIFY OTP FOR BOTH USERS
+// ------------------------
+app.post('/auth/verify-otp', (req, res) => {
+  const { email, otp, userType } = req.body;
+
+  if (!email || !otp || !userType) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  const tableName = userType === 'player' ? 'players' : 'arena_owners';
+
+  db.query(`SELECT id, verification_token FROM ${tableName} WHERE email = ?`, [email], (err, results) => {
     if (err) {
       console.error('Database error:', err);
-      return res.status(500).send('Server error');
+      return res.status(500).json({ error: "Database error" });
     }
 
-    if (playerResult.affectedRows > 0) {
-      // Player verified successfully
-      return res.redirect(`${process.env.FRONTEND_URL}/?verified=1&type=player`);
+    if (results.length === 0) {
+      return res.status(404).json({ error: "User not found" });
     }
 
-    // If no player was verified, try arena owner
-    db.query(verifyOwner, [token], (err, ownerResult) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).send('Server error');
+    const user = results[0];
+    
+    if (String(user.verification_token) !== String(otp)) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    // OTP matched, activate user
+    db.query(`UPDATE ${tableName} SET is_active = 1, verification_token = NULL WHERE email = ?`, [email], (updateErr) => {
+      if (updateErr) {
+        console.error('Database error activating user:', updateErr);
+        return res.status(500).json({ error: "Could not activate user" });
       }
 
-      if (ownerResult.affectedRows > 0) {
-        // Owner verified successfully
-        return res.redirect(`${process.env.FRONTEND_URL}/?verified=1&type=owner`);
-      }
-
-      // If token matches neither table
-      return res.status(400).send('Invalid or expired token');
+      return res.status(200).json({ message: "Verification successful!" });
     });
   });
 });

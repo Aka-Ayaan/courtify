@@ -30,7 +30,9 @@ CREATE TABLE IF NOT EXISTS players (
   name VARCHAR(100),
   phone VARCHAR(20),
   is_active TINYINT(1) DEFAULT 0,
-  verification_token VARCHAR(255)
+  verification_token VARCHAR(255),
+  reset_token VARCHAR(255) DEFAULT NULL,
+  reset_token_expiry DATETIME DEFAULT NULL
 );
 
 /* Dummy Players */
@@ -55,7 +57,9 @@ CREATE TABLE IF NOT EXISTS arena_owners (
   phone VARCHAR(20),
   password_hash VARCHAR(255) NOT NULL,
   is_active TINYINT(1) DEFAULT 0,
-  verification_token VARCHAR(255)
+  verification_token VARCHAR(255),
+  reset_token VARCHAR(255) DEFAULT NULL,
+  reset_token_expiry DATETIME DEFAULT NULL
 );
 
 /* Dummy Arena Owners */
